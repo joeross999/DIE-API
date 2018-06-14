@@ -7,10 +7,10 @@ var Position = function(x,y) {
     this.x = x;
     this.y = y;
   }
-  this.move = (x, y) => {
+  this.move = function (x, y) {
     this.x += x;
     this.y += y;
-  } 
+  }
 }
 
 Position.prototype.equals = function(other) {
