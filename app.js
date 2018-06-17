@@ -6,14 +6,18 @@ var app = express();
 var cors = require('cors');
 app.use(cors({origin: 'null'}));
 
-
 app.get('/init', function(req, res){
-  res.json(main.init());
+  res.json(main.init().map(bots => bots.position));
 });
 
 
 app.get('/refresh', function(req, res){
   res.json(main.frame().map(bots => bots.position));
+  // res.json(main.frame());
+});
+
+app.get('/test', function(req, res){
+  res.json(main.test());
 });
 
 
