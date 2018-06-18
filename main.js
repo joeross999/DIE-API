@@ -22,7 +22,8 @@ main.init = function () {
 
   // Initialize Communication System
   global.comSystem = new ComSystem(bots);
-  
+  // global.comSystem.setupMap(bots);
+
   setBotColor();
   
   return bots
@@ -30,6 +31,7 @@ main.init = function () {
 
 main.frame = function () {
   setSubscriberList();
+  sendMessages();
   setBotColor();
   moveBots();
 
@@ -50,7 +52,6 @@ main.test = function () {
 
 function moveBots() {
   for (var i = 0; i < bots.length; i++) {
-    bots[i].sendMessage();
     if(bots[i].subscribers.length === 0) {
       bots[i].move(1,1);
     } else if(bots[i].subscribers.length < 2) {
@@ -114,6 +115,12 @@ function setSubscriberList() {
         bots[j].subscribers.push(bots[i].address);
       }
     }
+  }
+}
+
+function sendMessages() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].broadcastMessage(bots[i].position);
   }
 }
 
