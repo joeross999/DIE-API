@@ -22,13 +22,15 @@ main.init = function () {
 
   // Initialize Communication System
   global.comSystem = new ComSystem(bots);
-
+  
+  setBotColor();
+  
   return bots
 };
 
 main.frame = function () {
   setSubscriberList();
-  // setBotColor();
+  setBotColor();
   moveBots();
 
   return bots;

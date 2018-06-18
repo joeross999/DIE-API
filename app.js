@@ -7,12 +7,12 @@ var cors = require('cors');
 app.use(cors({origin: 'null'}));
 
 app.get('/init', function(req, res){
-  res.json(main.init().map(bots => bots.position));
+  res.json(main.init().map(bot => {return {'pos': bot.position, 'color': bot.color}}));
 });
 
 
 app.get('/refresh', function(req, res){
-  res.json(main.frame().map(bots => bots.position));
+  res.json(main.frame().map(bot => {return {'pos': bot.position, 'color': bot.color}}));
   // res.json(main.frame());
 });
 
