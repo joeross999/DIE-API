@@ -21,7 +21,7 @@ main.init = function () {
   }
 
   // Initialize Communication System
-  global.comSystem = new ComSystem(bots);
+  global.comSystem = new ComSystem(bots, wirelessRange);
   // global.comSystem.setupMap(bots);
 
   setBotColor();
@@ -30,7 +30,7 @@ main.init = function () {
 };
 
 main.frame = function () {
-  setSubscriberList();
+  comSystem.setSubscriberList();
   sendMessages();
   setBotColor();
   moveBots();
@@ -100,20 +100,6 @@ function setBotColor() {
         break;
       default:
         bots[i].color = "purple";
-    }
-  }
-}
-
-function setSubscriberList() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].subscribers = [];
-  }
-  for (var i = 0; i < bots.length; i++) {
-    for (var j = i + 1; j < bots.length; j++) {
-      if (bots[i].position.distance(bots[j].position) <= wirelessRange) {
-        bots[i].subscribers.push(bots[j].address);
-        bots[j].subscribers.push(bots[i].address);
-      }
     }
   }
 }
