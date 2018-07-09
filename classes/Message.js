@@ -1,7 +1,9 @@
-var ComSystem = require('./classes/ComSystem.js');
+// var ComSystem = require('./ComSystem.js');
 
-var Message = function(sender, message) {
+var Message = function(sender, text) {
   this.sender = sender;
-  this.message = message;
-  this.id = ComSystem.newMessageID();
+  this.text = text;
+  this.id = comSystem.newMessageID();
 }
+
+module.exports = Message;

@@ -106,7 +106,7 @@ function setBotColor() {
 
 function sendMessages() {
   for (var i = 0; i < bots.length; i++) {
-    bots[i].broadcastMessage(bots[i].position);
+    bots[i].sendMessages(bots[i].position);
   }
 }
 
