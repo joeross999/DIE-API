@@ -4,12 +4,12 @@ var ComSystem = require('./classes/ComSystem.js');
 var helpers = require('./helpers');
 var main = {};
 var bots = [];
-var wirelessRange = 3;
+var wirelessRange = 5;
 var world = {
-  x: 10,
-  y: 10
+  x: 100,
+  y: 100
 };
-var numberOfBots = 5;
+var numberOfBots = 100;
 
 main.init = function () {
   bots = [];
@@ -30,9 +30,10 @@ main.init = function () {
 };
 
 main.frame = function () {
+  console.log("main frame");
   comSystem.setSubscriberList();
+  stepBots();
   sendMessages();
-  setTimeout(function(){}, 1000)
   setBotColor();
   moveBots();
 
@@ -102,6 +103,12 @@ function setBotColor() {
       default:
         bots[i].color = "purple";
     }
+  }
+}
+
+function stepBots() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].step();
   }
 }
 

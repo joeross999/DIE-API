@@ -12,7 +12,6 @@ var ComSystem = function(bots, wirelessRange){
     }
   };
   this.sendMessage = function(recipient, message) {
-    // console.log("MESSAGE: " + message.originalSender + " " + recipient)
     this.map[recipient].bot.receiveMessage(message);
   };
 
@@ -28,13 +27,10 @@ var ComSystem = function(bots, wirelessRange){
         }
       }
     }
-    console.log("bot "+ this.map[1].bot.position.x);
-    console.log("subscribers "+ this.map[1].subscribers);
   }
 
   this.broadcastMessage = function(sender, message) {
     for (var i = 0; i < this.map[sender].subscribers.length; i++) {
-      if(sender == 1) {console.log("SEND MESSAGE: " + sender + " " + this.map[sender].subscribers[i])}
       this.sendMessage(this.map[sender].subscribers[i], message);
     }
   }

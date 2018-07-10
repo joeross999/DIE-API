@@ -9,6 +9,7 @@ var Bot = function(pos, address) {
 
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function(message) {
+    this.receivedMessages.push(message.id);
     comSystem.broadcastMessage(this.address, message);
   }
 
@@ -16,23 +17,19 @@ var Bot = function(pos, address) {
     return new Message(this.address, message);
   }
 
-  this.sendMessages = function(message) {
+  this.step = function() {
     this.neighbors = [];
     this.receivedMessages = [];
+  }
+
+  this.sendMessages = function(message) {
     this.broadcastMessage(this.createMessage(message));
   }
   this.receiveMessage = function (message) {
-    if (this.address == 1) {console.log("message")}
     if(!this.receivedMessages.includes(message.id)){
-      if (this.address == 1) {console.log("new message: " + message.id)};
-      if (this.address == 1) {console.log(this.receivedMessages)};
-      this.receivedMessages.push(message.id);
-      if (this.address == 1) {console.log(this.receivedMessages)};
       this.neighbors.push(message.text);
       this.broadcastMessage(message);
     }
-    if (this.address == 1) {console.log("neighbors: " + this.neighbors.length)}
-    if (this.address == 1) {console.log(this.neighbors)}
   }
 
   this.move = function(x, y) {
