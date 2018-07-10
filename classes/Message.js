@@ -1,7 +1,7 @@
 // var ComSystem = require('./ComSystem.js');
 
 var Message = function(sender, text) {
-  this.sender = sender;
+  this.originalSender = sender;
   this.text = text;
   this.id = comSystem.newMessageID();
 }

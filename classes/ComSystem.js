@@ -12,12 +12,15 @@ var ComSystem = function(bots, wirelessRange){
     }
   };
   this.sendMessage = function(recipient, message) {
+    // console.log("MESSAGE: " + message.originalSender + " " + recipient)
     this.map[recipient].bot.receiveMessage(message);
   };
 
   this.setSubscriberList = function() {
     for (var i = 0; i < this.bots.length; i++) {
       this.map[this.bots[i].address].subscribers = [];
+    }
+    for (var i = 0; i < this.bots.length; i++) {
       for (var j = i + 1; j < this.bots.length; j++) {
         if (this.bots[i].position.distance(this.bots[j].position) <= this.wirelessRange) {
           this.map[this.bots[i].address].subscribers.push(this.bots[j].address);
@@ -25,11 +28,14 @@ var ComSystem = function(bots, wirelessRange){
         }
       }
     }
+    console.log("bot "+ this.map[1].bot.position.x);
+    console.log("subscribers "+ this.map[1].subscribers);
   }
 
-  this.broadcastMessage = function(message) {
-    for (var i = 0; i < this.map[message.sender].subscribers.length; i++) {
-      this.sendMessage(this.map[message.sender].subscribers[i], message);
+  this.broadcastMessage = function(sender, message) {
+    for (var i = 0; i < this.map[sender].subscribers.length; i++) {
+      if(sender == 1) {console.log("SEND MESSAGE: " + sender + " " + this.map[sender].subscribers[i])}
+      this.sendMessage(this.map[sender].subscribers[i], message);
     }
   }
 
