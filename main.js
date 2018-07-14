@@ -4,33 +4,42 @@ var ComSystem = require('./classes/ComSystem.js');
 var helpers = require('./helpers');
 var main = {};
 var bots = [];
-var wirelessRange = 5;
 var world = {
-  x: 100,
-  y: 100
+  worldBounds: {
+    x: 160,
+    y: 80
+  },
+  wirelessRange: 5,
+  numberOfBots: 100,
+  spawnRange : {
+    x: {},
+    y: {}
+  }
 };
-var numberOfBots = 100;
 
 main.init = function () {
   bots = [];
-  var points = generatePoints(numberOfBots, world.x, world.y);
+  setupWorld(world);
+  var points = generatePoints(world.numberOfBots, world.spawnRange);
   // TODO generate random addresses
 
-  for (var i = 0; i < numberOfBots; i++) {
+  for (var i = 0; i < world.numberOfBots; i++) {
     bots.push(new Bot(points[i], i));
   }
 
   // Initialize Communication System
-  global.comSystem = new ComSystem(bots, wirelessRange);
-  // global.comSystem.setupMap(bots);
+  global.comSystem = new ComSystem(bots, world.wirelessRange);
+
 
   setBotColor();
-  
-  return bots
+
+  return {
+    "bots": bots,
+    "world": world.worldBounds
+  };
 };
 
 main.frame = function () {
-  console.log("main frame");
   comSystem.setSubscriberList();
   stepBots();
   sendMessages();
@@ -40,35 +49,23 @@ main.frame = function () {
   return bots;
 }
 
-
-main.test = function () {
-  var points = generatePoints(numberOfBots, world.x, world.y);
-
-  for (var i = 0; i < numberOfBots; i++) {
-    bots.push(new Bot(points[i], i));
-  }
-
-  setSubscriberList();
-  return bots;
-}
-
 function moveBots() {
   for (var i = 0; i < bots.length; i++) {
-    if(bots[i].neighbors.length === 0) {
-      bots[i].move(1,1);
-    } else if(bots[i].neighbors.length < 2) {
+    if (bots[i].neighbors.length === 0) {
+      bots[i].move(1, 1);
+    } else if (bots[i].neighbors.length < 2) {
       bots[i].move(0, -1);
     } else {
-      bots[i].move(5,0)
+      bots[i].move(5, 0)
     }
   }
 }
 
-function generatePoints(numBots, worldX, worldY) {
+function generatePoints(numBots, spawnRange) {
   let points = [];
   for (var i = 0; i < numBots; i++) {
-    var x = Math.floor(Math.random() * (worldX));
-    var y = Math.floor(Math.random() * (worldY));
+    var x = Math.floor(Math.random() * (spawnRange.x.max - spawnRange.x.min)) + spawnRange.x.min;
+    var y = Math.floor(Math.random() * (spawnRange.y.max - spawnRange.y.min)) + spawnRange.y.min;
     newPoint = new Position(x, y);
     if (!points.containsEqual(newPoint)) {
       points.push(newPoint);
@@ -77,6 +74,13 @@ function generatePoints(numBots, worldX, worldY) {
     }
   }
   return points;
+}
+
+function setupWorld(world) {
+  world.spawnRange.x.min = world.worldBounds.x/4;
+  world.spawnRange.x.max = world.worldBounds.x/4*3;
+  world.spawnRange.y.min = world.worldBounds.y/4;
+  world.spawnRange.y.max = world.worldBounds.y/4*3;
 }
 
 function setBotColor() {

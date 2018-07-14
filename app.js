@@ -7,7 +7,8 @@ var cors = require('cors');
 app.use(cors({origin: 'null'}));
 
 app.get('/init', function(req, res){
-  res.json(main.init().map(bot => {return {'pos': bot.position, 'color': bot.color}}));
+  result = main.init();
+  res.json({"bots": result.bots.map(bot => {return {'pos': bot.position, 'color': bot.color}}), "world": result.world});
 });
 
 
