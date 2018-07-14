@@ -2,7 +2,6 @@ var Message = require('./Message.js');
 
 var Bot = function(pos, address) {
   this.position = pos;
-  this.subscribers = [];
   this.address = address;
   this.receivedMessages = []
   this.neighbors = [];
