@@ -4,20 +4,11 @@ var ComSystem = require('./classes/ComSystem.js');
 var helpers = require('./helpers');
 var main = {};
 var bots = [];
-var world = {
-  worldBounds: {
-    x: 160,
-    y: 80
-  },
-  wirelessRange: 5,
-  numberOfBots: 100,
-  spawnRange : {
-    x: {},
-    y: {}
-  }
-};
+var world = {};
 
-main.init = function () {
+main.init = function (data) {
+  world = data;
+  console.log(data);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
@@ -77,6 +68,10 @@ function generatePoints(numBots, spawnRange) {
 }
 
 function setupWorld(world) {
+  world.spawnRange = {
+    x: {},
+    y: {}
+  }
   world.spawnRange.x.min = world.worldBounds.x/4;
   world.spawnRange.x.max = world.worldBounds.x/4*3;
   world.spawnRange.y.min = world.worldBounds.y/4;
