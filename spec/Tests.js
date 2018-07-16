@@ -138,7 +138,7 @@ describe("Bot", function() {
   });
 });
 
-describe("Comm System", function() {
+describe("Com System", function() {
   it("subscriber list", function() {
     let range = 5
     let bots = init(range);
