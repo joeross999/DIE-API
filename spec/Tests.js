@@ -158,3 +158,15 @@ describe("Com System", function() {
     }
   });
 });
+
+let helpers = require('../helpers');
+
+describe("Helper", function() {
+  it("ContainsEqual", function() {
+    let testArr = [new Position(5, 3), new Position(10, 24), new Position(11, 11)];
+    expect(testArr.containsEqual(new Position(5, 3))).toBe(true);
+    expect(testArr.containsEqual(new Position(11, 11))).toBe(true);
+    expect(testArr.containsEqual(new Position(10, 24))).toBe(true);
+    expect(testArr.containsEqual(new Position(5, 24))).toBe(false);
+  });
+});
