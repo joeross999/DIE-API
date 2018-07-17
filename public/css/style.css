@@ -45,9 +45,9 @@ h1, h2, h3, h4, h5, h6, p {
   text-align: center;
 }
 
-#setup h1{
-  color: white;
-  text-align: center;
+#setup img{
+  max-width: 300px;
+  margin-right: 100px;
 }
 
 #setup h2 {

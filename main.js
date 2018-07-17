@@ -8,7 +8,6 @@ var world = {};
 
 main.init = function (data) {
   world = data;
-  console.log(data);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
