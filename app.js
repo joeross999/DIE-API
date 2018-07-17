@@ -2,15 +2,27 @@ var main = require('./main.js')
 
 var express = require('express');
 var app = express();
+var path = require('path');
+var favicon = require('serve-favicon');
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use('/public', express.static('public'));
+
+app.use(favicon(__dirname + '/public/images/logo_transparent.ico'));
 
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+app.use(bodyParser.urlencoded({
   extended: true
 })); 
 
 var cors = require('cors');
 app.use(cors({origin: 'null'}));
+
+app.get('/', function(req, res){
+  res.render('index');
+});
 
 app.post('/init', function(req, res){
   console.log("req.body")
