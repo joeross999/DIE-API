@@ -31,7 +31,7 @@ let defaultWorld = {
   numberOfBots: 100,
   speed: 1000,
 };
-world = Object.assign({}, defaultWorld);
+world = JSON.parse(JSON.stringify(defaultWorld));
 // Initialize Simulation
 function initSim() {
   $.post({
@@ -53,8 +53,6 @@ function refresh() {
       url: "http://localhost:3000/refresh",
       dataType: "json",
       success: function (res) {
-        // drawMap(res.map(bots => bots.position));
-        // console.log(res);
         drawMap(res, world);
         refresh();
       }
@@ -151,7 +149,7 @@ function initWorldSettings() {
 }
 
 function resetSettings() {
-  world = defaultWorld;
+  world = JSON.parse(JSON.stringify(defaultWorld));
   initInputs();
 }
 
@@ -159,9 +157,9 @@ function resetSettings() {
 function initInputs() {
   numberOfBotsSelector.val(world.numberOfBots);
   numberOfBotsOutput.html(world.numberOfBots);
-  speedSelector.val(defaultWorld.speed);
-  worldSizeXSelector.val(defaultWorld.worldBounds.x);
-  worldSizeYSelector.val(defaultWorld.worldBounds.y);
+  speedSelector.val(world.speed);
+  worldSizeXSelector.val(world.worldBounds.x);
+  worldSizeYSelector.val(world.worldBounds.y);
 }
 
 // Slider listener
