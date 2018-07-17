@@ -1,0 +1,94 @@
+/* ========== General Helpers ========== */
+
+body {
+  margin: 0;
+  font-family: Roboto, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin-top: 0;
+  color: #111;
+}
+
+.inner-content {
+  margin: 30px auto 0;
+}
+
+.container {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  overflow-y: scroll;
+}
+
+.button {
+  display: inline-block;
+  border-radius: 5px;
+  cursor: pointer;
+  -webkit-touch-callout: none; 
+    -webkit-user-select: none; 
+     -khtml-user-select: none; 
+       -moz-user-select: none; 
+        -ms-user-select: none; 
+            user-select: none; 
+}
+/* ========== Setup Screen ========== */
+
+.container#setup {
+  z-index: 1;
+  background-image: url("http://thelifeofcode.com/public/images/background.svg");
+}
+
+.container#setup .inner-content {
+  max-width: 1100px;
+  width: 90%;
+  text-align: center;
+}
+
+#setup img{
+  max-width: 300px;
+  margin-right: 100px;
+}
+
+#setup h2 {
+  margin-bottom: 0;
+}
+
+#reset-settings {
+  margin: 20px 0;
+
+}
+
+.button.white-clear {
+  margin-top: 20px;
+  padding: 10px 50px;
+  border: 2px solid rgba(255,255,255, .6);
+  color: white;
+}
+.button.grey-clear {
+  margin-top: 20px;
+  padding: 10px 50px;
+  border: 2px solid rgba(75,75,75, .6);
+}
+
+
+/* ========== Simulation Screen settings ========== */
+
+#simulation .inner-content{
+  opacity: 0;
+}
+
+#simulation h1 {
+  text-align: center;
+}
+
+#simulation #playField {
+  border: 1px solid black;
+  display: block;
+  margin: 0 auto;
+}
+
+#simulation .buttons {
+  text-align: center;
+  margin-top: 30px;
+}

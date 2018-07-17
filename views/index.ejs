@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>DIE Project</title>
+  <link rel="stylesheet" href="public/css/style.css">
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <div id="setup" class="container">
+    <div class="inner-content">
+      <img src="public/images/logo.png" alt="">
+      <div class="settings">
+        <h2>Settings</h2>
+        <span id="reset-settings" class="button" >Reset to Default</span>
+        <div class="slidecontainer">
+          <h4>Number of Bots: <span id="number-of-bots"></span></h4>
+          <input type="range" min="50" max="200" value="100" class="slider" id="bot-selector">
+          <h4 style="margin-top: 30px">World Size: 
+            <select id="world-size-x">
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="300">300</option>
+            </select> X 
+            <select id="world-size-y">
+              <option value="100">100</option>
+              <option value="160">160</option>
+              <option value="200">200</option>
+            </select>
+          </h4> 
+          <h4>Speed of Simulation</h4>
+          <select id="speed">
+            <option value="3000">Slow</option>
+            <option value="1000">Medium</option>
+            <option value="250">Fast</option>
+          </select>
+        </div>
+      </div>
+      <span class="go-button button white-clear">GO</span>
+    </div>
+  </div>
+
+
+  <div id="simulation" class="container">
+    <div class="inner-content">
+      <h1>DIE Simulation</h1>
+      <canvas id="playField" width="600" height="600"></canvas>
+      <div class="buttons">
+        <span id="reset-button" class="button grey-clear">Reset Simulation</span> - 
+        <span class="change-settings button grey-clear">Change Settings</span>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="public/js/main.js"></script>
+</body>
