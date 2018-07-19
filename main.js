@@ -31,11 +31,10 @@ main.init = function (data) {
 
 main.frame = function () {
   comSystem.setSubscriberList();
-  stepBots();
   sendMessages();
-  setBotColor();
   moveBots();
-
+  cleanupBots();
+  setBotColor();
   return bots;
 }
 
@@ -71,15 +70,15 @@ function setupWorld(world) {
     x: {},
     y: {}
   }
-  world.spawnRange.x.min = world.worldBounds.x/4;
-  world.spawnRange.x.max = world.worldBounds.x/4*3;
-  world.spawnRange.y.min = world.worldBounds.y/4;
-  world.spawnRange.y.max = world.worldBounds.y/4*3;
+  world.spawnRange.x.min = world.worldBounds.x / 4;
+  world.spawnRange.x.max = world.worldBounds.x / 4 * 3;
+  world.spawnRange.y.min = world.worldBounds.y / 4;
+  world.spawnRange.y.max = world.worldBounds.y / 4 * 3;
 }
 
 function setBotColor() {
   for (var i = 0; i < bots.length; i++) {
-    switch (bots[i].neighbors.length) {
+    switch (bots[i].moveCounter) {
       case 0:
         bots[i].color = "black";
         break;
@@ -104,15 +103,15 @@ function setBotColor() {
   }
 }
 
-function stepBots() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].step();
-  }
-}
-
 function sendMessages() {
   for (var i = 0; i < bots.length; i++) {
     bots[i].sendMessages(bots[i].position);
+  }
+}
+
+function cleanupBots() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].cleanup();
   }
 }
 
