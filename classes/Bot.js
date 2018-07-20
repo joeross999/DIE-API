@@ -1,4 +1,5 @@
 var Message = require('./Message.js');
+var Position = require('./Position.js');
 
 var Bot = function (pos, address) {
   this.position = pos;
@@ -36,7 +37,7 @@ var Bot = function (pos, address) {
       this.moveCounter = 0;
       let cluster = this.neighbors.slice();
       cluster.push(this.position);
-      this.calcOrigin(cluster);
+      this.origin = this.calcOrigin(cluster);
     }
     this.lastTurnNeigborsLength = this.neighbors.length;
     this.neighbors = [];
@@ -55,15 +56,33 @@ var Bot = function (pos, address) {
   }
   
   this.roam = function () {
-    // Move in roaming pattern
+    // TODO Move in roaming pattern
   }
   
   this.assemblePattern = function() {
-    // Move in direction to form pattern
+    // TODO Move in direction to form pattern
   }
 
   this.calcOrigin = function(cluster) {
-    // Calculate origin of cluster
+    totalX = 0;
+    totalY = 0;
+    for (let i = 0; i < cluster.length; i++){
+      totalX += cluster[i].x;
+      totalY += cluster[i].y;
+    }
+    return new Position(Math.floor(totalX/cluster.length), Math.floor(totalY/cluster.length));
+  }
+
+  this.moveTowards = function(target){    
+    if(this.position.equals(target)) {
+      return new Position(0,0);
+    }
+    let distance = target.distance(this.position);
+    let distanceX = target.x - this.position.x
+    let distanceY = target.y - this.position.y
+    let angleIncrement = Math.PI/4;
+    let targetAngle = Math.round(Math.atan2(distanceX, distanceY) / angleIncrement) * angleIncrement;
+    this.move(Math.round(Math.sin(targetAngle)), Math.round(Math.cos(targetAngle)));
   }
 }
 

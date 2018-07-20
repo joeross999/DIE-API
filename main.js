@@ -40,13 +40,7 @@ main.frame = function () {
 
 function moveBots() {
   for (var i = 0; i < bots.length; i++) {
-    if (bots[i].neighbors.length === 0) {
-      bots[i].move(1, 1);
-    } else if (bots[i].neighbors.length < 2) {
-      bots[i].move(0, -1);
-    } else {
-      bots[i].move(5, 0)
-    }
+    bots[i].moveTowards(bots[i].origin)
   }
 }
 

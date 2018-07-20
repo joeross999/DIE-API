@@ -136,6 +136,36 @@ describe("Bot", function() {
     expect(bots[0].lastMessage.text).toBe(m2); // Ensure bot 0 recieved correct message
     expect(bots[0].recNum).toBe(2); // Check for extra messages
   });
+
+  it("calcOrigin", function() {
+    let a = new Position(0,0);
+    let b = new Position(0,2);
+    let c = new Position(2,2);
+    let d = new Position(2,0);
+    let cluster = [a, b, c, d];
+    let bot = new Bot(a);
+    let origin = bot.calcOrigin(cluster);
+    expect(origin.x).toBe(1);
+    expect(origin.y).toBe(1);
+  });
+
+  it("moveTowards", function() {
+    let a = new Position(0,0);
+    let b = new Position(1,10);
+    let c = new Position(2,2);
+    let d = new Position(10,2);
+    let bot = new Bot(a);
+    bot.moveTowards(c);
+    expect(bot.position.x).toBe(1);
+    expect(bot.position.y).toBe(1);
+    bot.moveTowards(b);
+    expect(bot.position.x).toBe(1);
+    expect(bot.position.y).toBe(2);
+    bot.moveTowards(d);
+    expect(bot.position.x).toBe(2);
+    expect(bot.position.y).toBe(2);
+  });
+
 });
 
 describe("Com System", function() {
