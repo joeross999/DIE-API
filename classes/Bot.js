@@ -77,11 +77,8 @@ var Bot = function (pos, address) {
     if(this.position.equals(target)) {
       return new Position(0,0);
     }
-    let distance = target.distance(this.position);
-    let distanceX = target.x - this.position.x
-    let distanceY = target.y - this.position.y
     let angleIncrement = Math.PI/4;
-    let targetAngle = Math.round(Math.atan2(distanceX, distanceY) / angleIncrement) * angleIncrement;
+    let targetAngle = Math.round(Math.atan2(this.position.xDistance(target), this.position.yDistance(target)) / angleIncrement) * angleIncrement;
     this.move(Math.round(Math.sin(targetAngle)), Math.round(Math.cos(targetAngle)));
   }
 }

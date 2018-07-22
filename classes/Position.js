@@ -26,4 +26,12 @@ Position.prototype.distance = function(other) {
   return Math.hypot(dx, dy);
 }
 
+Position.prototype.xDistance = function(other) {
+   return other.x - this.x;
+}
+
+Position.prototype.yDistance = function(other) {
+   return other.y - this.y;
+}
+
 module.exports = Position;
