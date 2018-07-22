@@ -1,9 +1,9 @@
-var ComSystem = function(bots, wirelessRange){
+var ComSystem = function (bots, wirelessRange) {
   this.wirelessRange = wirelessRange
   this.bots = bots;
   this.nextMessageID = 0;
   this.map = {};
-  this.setupMap = function(bots){
+  this.setupMap = function (bots) {
     for (var i = 0; i < bots.length; i++) {
       this.map[bots[i].address] = {
         'bot': bots[i],
@@ -11,11 +11,11 @@ var ComSystem = function(bots, wirelessRange){
       }
     }
   };
-  this.sendMessage = function(recipient, message) {
+  this.sendMessage = function (recipient, message) {
     this.map[recipient].bot.receiveMessage(message);
   };
 
-  this.setSubscriberList = function() {
+  this.setSubscriberList = function () {
     for (var i = 0; i < this.bots.length; i++) {
       this.map[this.bots[i].address].subscribers = [];
     }
@@ -29,17 +29,27 @@ var ComSystem = function(bots, wirelessRange){
     }
   }
 
-  this.broadcastMessage = function(sender, message) {
+  this.broadcastMessage = function (sender, message) {
     for (var i = 0; i < this.map[sender].subscribers.length; i++) {
       this.sendMessage(this.map[sender].subscribers[i], message);
     }
   }
 
-  this.newMessageID = function(){
+  this.newMessageID = function () {
     var id = this.nextMessageID;
     this.nextMessageID++;
     return id;
   };
+
+  this.spaceOccupied = function (space) {
+    for (let i = 0; i < bots.length; i++) {
+      if (this.bots[i].position.equals(space)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   this.setupMap(bots);
 }
 module.exports = ComSystem;

@@ -1,20 +1,23 @@
 var Position = require('./classes/Position');
 var Bot = require('./classes/Bot.js');
 var ComSystem = require('./classes/ComSystem.js');
+var Maps = require('./classes/Maps.js');
 var helpers = require('./helpers');
 var main = {};
 var bots = [];
 var world = {};
+var pattern = {};
 
 main.init = function (data) {
   world = data;
+  pattern = new Maps.solidSquare(world.numberOfBots);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
   // TODO generate random addresses
 
   for (var i = 0; i < world.numberOfBots; i++) {
-    bots.push(new Bot(points[i], i));
+    bots.push(new Bot(points[i], i, Object.assign({}, pattern)));
   }
 
   // Initialize Communication System
