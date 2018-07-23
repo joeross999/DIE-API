@@ -1,7 +1,5 @@
-# DIE Project
+# Distributed Intelligence Experiement
 ---
-## DIE (Distributed Intelligence Experiement)
-
 > Disclaimer: We are currently in the very early stages of development and have not yet completed the first version of the project
 
 ### About
