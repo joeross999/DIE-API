@@ -11,13 +11,17 @@ var pattern = {};
 main.init = function (data) {
   world = data;
   pattern = new Maps.solidSquare(world.numberOfBots);
+  pattern.init();
+  console.log(pattern);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
   // TODO generate random addresses
 
   for (var i = 0; i < world.numberOfBots; i++) {
-    bots.push(new Bot(points[i], i, Object.assign({}, pattern)));
+    newPattern = Object.assign({}, pattern);
+    newPattern.init = pattern.init;
+    bots.push(new Bot(points[i], i, newPattern));
   }
 
   // Initialize Communication System
@@ -35,6 +39,7 @@ main.init = function (data) {
 main.frame = function () {
   comSystem.setSubscriberList();
   sendMessages();
+  postCommunication();
   moveBots();
   cleanupBots();
   setBotColor();
@@ -43,7 +48,13 @@ main.frame = function () {
 
 function moveBots() {
   for (var i = 0; i < bots.length; i++) {
-    bots[i].moveTowards(bots[i].origin)
+    bots[i].assemblePattern();
+  }
+}
+
+function postCommunication() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].postCommunication();
   }
 }
 
@@ -75,7 +86,7 @@ function setupWorld(world) {
 
 function setBotColor() {
   for (var i = 0; i < bots.length; i++) {
-    switch (bots[i].moveCounter) {
+    switch (bots[i].lastTurnNeigborsLength) {
       case 0:
         bots[i].color = "black";
         break;
