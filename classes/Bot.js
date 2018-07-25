@@ -81,8 +81,8 @@ var Bot = function (pos, address, pattern) {
 
   this.chooseTarget = function () {
     // Choose target from open options
-    let targetDistance = 1;
-    let minimunNumberOfTargets = 5
+    let targetDistance = 0;
+    let minimunNumberOfTargets = 5;
     let eligibleTargets = []
     while (eligibleTargets.length <= minimunNumberOfTargets) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
