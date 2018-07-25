@@ -81,40 +81,25 @@ var Bot = function (pos, address, pattern) {
 
   this.chooseTarget = function () {
     // Choose target from open options
-    let targetDistance = 0;
-    let minimunNumberOfTargets = 5;
-    let eligibleTargets = []
-    while (eligibleTargets.length <= minimunNumberOfTargets) {
-      eligibleTargets = this.chooseEligibleTargets(targetDistance);
-      targetDistance++;
-    }
-    if(this.address == 0){console.log("Eligible targets: " + eligibleTargets.length)}
     let nearestTarget = {
-      "target": eligibleTargets[0],
-      "distance": eligibleTargets[0].location.distance(this.position)
+      "target": this.pattern.map[0].location,
+      "priorityScore": this.determinePriority(this.pattern.map[0].location.distance(this.position), this.pattern.map[0].priority)
     };
-    for (var i = 1; i < eligibleTargets; i++) {
-      let distance = eligibleTargets[i].location.distance(this.position);
-      if (distance < nearestTarget.distance) {
-        nearestTarget.target = eligibleTargets[i];
-        nearestTarget.distance = distance;
+    for (let i = 0; i < this.pattern.map.length; i++) {
+      elem = this.pattern.map[i];
+      if(elem.isTarget && !elem.isOccupied) {
+        let priorityScore = this.determinePriority(elem.location.distance(this.position), elem.priority);
+        if(priorityScore > nearestTarget.priorityScore) {
+          nearestTarget.target = elem.location;
+          nearestTarget.priorityScore = priorityScore;
+        }
       }
     }
-    if(this.address == 0){console.log("TARGET: " + nearestTarget.target.location.x + " " + nearestTarget.target.location.y)}
-    return nearestTarget.target.location;
+    return nearestTarget.target;
   }
 
-  this.chooseEligibleTargets = function (eligibleDistance) {
-    let eligibleTargets = [];
-    for (let i = 0; i < this.pattern.map.length; i++) {
-      let elem = this.pattern.map[i];
-      if (elem.virtualLocation.xDistance(this.pattern.virtualOrigin) <= eligibleDistance &&
-        elem.virtualLocation.yDistance(this.pattern.virtualOrigin) <= eligibleDistance &&
-        elem.target == true && elem.occupied == false) {
-        eligibleTargets.push(elem);
-      }
-    }
-    return eligibleTargets;
+  this.determinePriority = function(distance, priority) {
+    return (1/(distance + 1)) + 2/priority;
   }
 
   this.reachTarget = function () {
@@ -136,11 +121,6 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.moveTowards = function (target) {
-    
-    if(this.address == 1) {
-      console.log("MOVE TOWARDS: " + target.x + " " + target.y)
-      console.log("ORIGIN: " + this.origin.x + " " + this.origin.y)
-    }
     if (this.position.equals(target)) {
       return new Position(0, 0);
     }

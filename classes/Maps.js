@@ -12,10 +12,12 @@ let solidSquare = function (bots) {
     this.map = [];
     for (let i = 0; i < this.width; i++) {
       for (let j = 0; j < this.height; j++) {
+        let virtualLocation = new Position(i, j);
         this.map[counter] = {
-          target: true,
-          occupied: false,
-          virtualLocation: new Position(i, j)
+          isTarget: true,
+          isOccupied: false,
+          priority: virtualLocation.distance(this.virtualOrigin) + 1,
+          virtualLocation: virtualLocation
         };
         counter++;
       };
@@ -35,10 +37,12 @@ let checkerboardSquare = function (bots) {
     this.map = [];
     for (let i = 0; i < this.width; i++) {
       for (let j = 0; j < this.height; j++) {
+        let virtualLocation = new Position(i, j);
         this.map[counter] = {
           target: (i%2 == 1 && j%2 == 1) || (i%2 == 0 && j%2 == 0),
           occupied: false,
-          virtualLocation: new Position(i, j)
+          priority: virtualLocation.distance(this.virtualOrigin) + 1,
+          virtualLocation: virtualLocation
         };
         counter++;
       };
