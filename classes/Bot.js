@@ -88,7 +88,6 @@ var Bot = function (pos, address, pattern) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
-    if(this.address == 0){console.log("Eligible targets: " + eligibleTargets.length)}
     let nearestTarget = {
       "target": eligibleTargets[0],
       "distance": eligibleTargets[0].location.distance(this.position)
@@ -100,7 +99,6 @@ var Bot = function (pos, address, pattern) {
         nearestTarget.distance = distance;
       }
     }
-    if(this.address == 0){console.log("TARGET: " + nearestTarget.target.location.x + " " + nearestTarget.target.location.y)}
     return nearestTarget.target.location;
   }
 
@@ -110,7 +108,7 @@ var Bot = function (pos, address, pattern) {
       let elem = this.pattern.map[i];
       if (elem.virtualLocation.xDistance(this.pattern.virtualOrigin) <= eligibleDistance &&
         elem.virtualLocation.yDistance(this.pattern.virtualOrigin) <= eligibleDistance &&
-        elem.target == true && elem.occupied == false) {
+        elem.isTarget == true && elem.isOccupied == false) {
         eligibleTargets.push(elem);
       }
     }
@@ -138,8 +136,6 @@ var Bot = function (pos, address, pattern) {
   this.moveTowards = function (target) {
     
     if(this.address == 1) {
-      console.log("MOVE TOWARDS: " + target.x + " " + target.y)
-      console.log("ORIGIN: " + this.origin.x + " " + this.origin.y)
     }
     if (this.position.equals(target)) {
       return new Position(0, 0);

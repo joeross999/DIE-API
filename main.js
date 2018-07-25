@@ -11,8 +11,6 @@ var pattern = {};
 main.init = function (data) {
   world = data;
   pattern = new Maps.solidSquare(world.numberOfBots);
-  pattern.init();
-  console.log(pattern);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
