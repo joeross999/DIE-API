@@ -74,7 +74,7 @@ var Bot = function (pos, address, pattern) {
   this.mapPattern = function () {
     for (let i = 0; i < pattern.size; i++) {
       elem = pattern.map[i];
-      elem.location = new Position(elem.virtualLocation.x, elem.virtualLocation.y)
+      elem.location = new Position(elem.virtualLocation.x, elem.virtualLocation.y);
       elem.location.move(pattern.virtualOrigin.xDistance(this.origin), pattern.virtualOrigin.yDistance(this.origin));
     }
   }

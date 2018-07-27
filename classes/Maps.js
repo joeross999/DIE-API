@@ -2,25 +2,22 @@ let Position = require('./Position');
 
 let solidSquare = function (bots) {
   this.width = Math.round(Math.sqrt(bots));
-  this.height = Math.round(Math.sqrt(bots));
   this.size = bots;
   this.map;
 
   this.init = function () {
-    this.virtualOrigin = new Position(Math.round(this.width / 2), Math.round(this.height / 2))
+    this.virtualOrigin = new Position(Math.round(this.width / 2), Math.round(this.width / 2))
     let counter = 0;
     this.map = [];
-    for (let i = 0; i < this.width; i++) {
-      for (let j = 0; j < this.height; j++) {
-        let virtualLocation = new Position(i, j);
-        this.map[counter] = {
-          isTarget: true,
-          isOccupied: false,
-          priority: virtualLocation.distance(this.virtualOrigin) + 1,
-          virtualLocation: virtualLocation
-        };
-        counter++;
+    for (let i = 0; i < this.size; i++) {
+      let virtualLocation = new Position(i % this.width, Math.floor(i / this.width));
+      this.map[counter] = {
+        isTarget: true,
+        isOccupied: false,
+        priority: virtualLocation.distance(this.virtualOrigin) + 1,
+        virtualLocation: virtualLocation
       };
+      counter++;
     };
   }
 };
@@ -35,16 +32,17 @@ let checkerboardSquare = function (bots) {
     this.virtualOrigin = new Position(Math.round(this.width / 2), Math.round(this.height / 2))
     let counter = 0;
     this.map = [];
-    for (let i = 0; i < this.width; i++) {
-      for (let j = 0; j < this.height; j++) {
-        let virtualLocation = new Position(i, j);
-        this.map[counter] = {
-          isTarget: (i%2 == 1 && j%2 == 1) || (i%2 == 0 && j%2 == 0),
-          isOccupied: false,
-          virtualLocation: new Position(i, j)
-        };
-        counter++;
+    for (let i = 0; i < this.size; i++) {
+      let x = i % this.width
+      let y = Math.floor(i / this.width)
+      let virtualLocation = new Position(x, y);
+      this.map[counter] = {
+        isTarget: (x % 2 == 1 && y % 2 == 1) || (x % 2 == 0 && y % 2 == 0),
+        isOccupied: false,
+        priority: virtualLocation.distance(this.virtualOrigin) + 1,
+        virtualLocation: virtualLocation
       };
+      counter++;
     };
   }
 };
