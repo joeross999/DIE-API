@@ -24,15 +24,14 @@ let solidSquare = function (bots) {
 
 let checkerboardSquare = function (bots) {
   this.width = Math.round(Math.sqrt(bots)) * 2;
-  this.height = Math.round(Math.sqrt(bots)) * 2;
   this.size = bots * 2;
   this.map;
 
   this.init = function () {
-    this.virtualOrigin = new Position(Math.round(this.width / 2), Math.round(this.height / 2))
+    this.virtualOrigin = new Position(Math.round(this.width / 2), Math.round(this.width / 2))
     let counter = 0;
     this.map = [];
-    for (let i = 0; i < this.size; i++) {
+    for (let i = 0; i < this.size * 2; i++) {
       let x = i % this.width
       let y = Math.floor(i / this.width)
       let virtualLocation = new Position(x, y);

@@ -7,27 +7,33 @@ var Bot = function (pos, address, pattern) {
   this.receivedMessages = []
   this.neighbors = [];
   this.origin = pos;
-  this.lastTurnNeigborsLength = 0;
+  this.lastTurnNeigborsLength = -1;
   this.moveCounter = 0;
+  this.target = null;
   this.pattern = pattern;
   this.pattern.init();
   // Broadcasts single message to all bots in range
-  this.broadcastMessage = async function (message) {
+  this.broadcastMessage = async function (message, type) {
     this.receivedMessages.push(message.id);
     comSystem.broadcastMessage(this.address, message);
   }
-
-  this.createMessage = function (message) {
-    return new Message(this.address, message);
+  
+  this.createMessage = function (message, type) {
+    return new Message(this.address, message, type);
   }
-
-  this.sendMessages = function (message) {
-    this.broadcastMessage(this.createMessage(message));
+  
+  this.sendMessages = function (text) {
+    this.broadcastMessage(this.createMessage(text, "position"));
   }
 
   this.receiveMessage = function (message) {
     if (!this.receivedMessages.includes(message.id)) {
-      this.neighbors.push(message.text);
+      if(message.type === "position") {
+        this.neighbors.push(message.text);
+      }
+      if(message.type === "targetReached") {
+        this.acceptReachTarget(message.text);
+      }
       this.broadcastMessage(message);
     }
   }
@@ -39,8 +45,8 @@ var Bot = function (pos, address, pattern) {
       let cluster = this.neighbors.slice();
       cluster.push(this.position);
       this.origin = this.calcOrigin(cluster);
+      this.mapPattern();
     }
-    this.mapPattern();
   }
 
   this.cleanup = function () {
@@ -67,8 +73,13 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.assemblePattern = function () {
-    // TODO Move in direction to form pattern
-    this.moveTowards(this.chooseTarget());
+    // TODO Move in direction to form pattern'
+    this.target = this.chooseTarget()
+    if(this.target.equals(this.position)) {
+      this.reachTarget();
+    }else {
+      this.moveTowards(this.target);
+    }
   }
 
   this.mapPattern = function () {
@@ -125,11 +136,15 @@ var Bot = function (pos, address, pattern) {
 
   this.reachTarget = function () {
     // Send message to other bots to inform them that a target has been filled
+    this.broadcastMessage(this.createMessage(this.position, "targetReached"));
   }
 
-  this.acceptReachTarget = function () {
+  this.acceptReachTarget = function (message) {
     // Check if filled target was yours, if so replace your target.
-
+    if(message.equals(this.target)) {
+      this.target = this.chooseTarget();
+    }
+    // CALL Pathfinding
   }
 
   this.calcOrigin = function (cluster) {
