@@ -39,10 +39,9 @@ let checkerboardSquare = function (bots) {
       for (let j = 0; j < this.height; j++) {
         let virtualLocation = new Position(i, j);
         this.map[counter] = {
-          target: (i%2 == 1 && j%2 == 1) || (i%2 == 0 && j%2 == 0),
-          occupied: false,
-          priority: virtualLocation.distance(this.virtualOrigin) + 1,
-          virtualLocation: virtualLocation
+          isTarget: (i%2 == 1 && j%2 == 1) || (i%2 == 0 && j%2 == 0),
+          isOccupied: false,
+          virtualLocation: new Position(i, j)
         };
         counter++;
       };
