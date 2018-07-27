@@ -81,12 +81,20 @@ var Bot = function (pos, address, pattern) {
 
   this.chooseTarget = function () {
     // Choose target from open options
+    let targetDistance = 0;
+    let minimunNumberOfTargets = 5;
+    let eligibleTargets = []
+    while (eligibleTargets.length <= minimunNumberOfTargets) {
+      eligibleTargets = this.chooseEligibleTargets(targetDistance);
+      targetDistance++;
+    }
+    // Choose target from open options
     let nearestTarget = {
-      "target": this.pattern.map[0].location,
-      "priorityScore": this.determinePriority(this.pattern.map[0].location.distance(this.position), this.pattern.map[0].priority)
+      "target": eligibleTargets[0].location,
+      "priorityScore": this.determinePriority(eligibleTargets[0].location.distance(this.position), eligibleTargets[0].priority)
     };
-    for (let i = 0; i < this.pattern.map.length; i++) {
-      elem = this.pattern.map[i];
+    for (let i = 0; i < eligibleTargets.length; i++) {
+      elem = eligibleTargets[i];
       if(elem.isTarget && !elem.isOccupied) {
         let priorityScore = this.determinePriority(elem.location.distance(this.position), elem.priority);
         if(priorityScore > nearestTarget.priorityScore) {
@@ -96,6 +104,19 @@ var Bot = function (pos, address, pattern) {
       }
     }
     return nearestTarget.target;
+  }
+
+  this.chooseEligibleTargets = function (eligibleDistance) {
+    let eligibleTargets = [];
+    for (let i = 0; i < this.pattern.map.length; i++) {
+      let elem = this.pattern.map[i];
+      if (elem.virtualLocation.xDistance(this.pattern.virtualOrigin) <= eligibleDistance &&
+        elem.virtualLocation.yDistance(this.pattern.virtualOrigin) <= eligibleDistance &&
+        elem.isTarget == true && elem.isOccupied == false) {
+        eligibleTargets.push(elem);
+      }
+    }
+    return eligibleTargets;
   }
 
   this.determinePriority = function(distance, priority) {
@@ -108,6 +129,7 @@ var Bot = function (pos, address, pattern) {
 
   this.acceptReachTarget = function () {
     // Check if filled target was yours, if so replace your target.
+
   }
 
   this.calcOrigin = function (cluster) {
