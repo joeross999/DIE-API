@@ -88,18 +88,22 @@ var Bot = function (pos, address, pattern) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
+    // Choose target from open options
     let nearestTarget = {
-      "target": eligibleTargets[0],
-      "distance": eligibleTargets[0].location.distance(this.position)
+      "target": eligibleTargets[0].location,
+      "priorityScore": this.determinePriority(eligibleTargets[0].location.distance(this.position), eligibleTargets[0].priority)
     };
-    for (var i = 1; i < eligibleTargets; i++) {
-      let distance = eligibleTargets[i].location.distance(this.position);
-      if (distance < nearestTarget.distance) {
-        nearestTarget.target = eligibleTargets[i];
-        nearestTarget.distance = distance;
+    for (let i = 0; i < eligibleTargets.length; i++) {
+      elem = eligibleTargets[i];
+      if(elem.isTarget && !elem.isOccupied) {
+        let priorityScore = this.determinePriority(elem.location.distance(this.position), elem.priority);
+        if(priorityScore > nearestTarget.priorityScore) {
+          nearestTarget.target = elem.location;
+          nearestTarget.priorityScore = priorityScore;
+        }
       }
     }
-    return nearestTarget.target.location;
+    return nearestTarget.target;
   }
 
   this.chooseEligibleTargets = function (eligibleDistance) {
@@ -115,12 +119,17 @@ var Bot = function (pos, address, pattern) {
     return eligibleTargets;
   }
 
+  this.determinePriority = function(distance, priority) {
+    return (1/(distance + 1)) + 2/priority;
+  }
+
   this.reachTarget = function () {
     // Send message to other bots to inform them that a target has been filled
   }
 
   this.acceptReachTarget = function () {
     // Check if filled target was yours, if so replace your target.
+
   }
 
   this.calcOrigin = function (cluster) {
@@ -134,9 +143,6 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.moveTowards = function (target) {
-    
-    if(this.address == 1) {
-    }
     if (this.position.equals(target)) {
       return new Position(0, 0);
     }
