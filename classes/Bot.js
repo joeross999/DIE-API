@@ -1,5 +1,6 @@
 var Message = require('./Message.js');
 var Position = require('./Position.js');
+var PathFinding = require('pathfinding');
 
 var Bot = function (pos, address, pattern) {
   this.position = pos;
@@ -11,6 +12,7 @@ var Bot = function (pos, address, pattern) {
   this.moveCounter = 0;
   this.pattern = pattern;
   this.pattern.init();
+
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function (message) {
     this.receivedMessages.push(message.id);
@@ -66,9 +68,36 @@ var Bot = function (pos, address, pattern) {
     // TODO Move in roaming pattern
   }
 
+  this.getVirtualLocation = function (position) {
+    let node = this.pattern.map[0]
+    let offset = {
+      x: node.location.xDistance(node.virtualLocation),
+      y: node.location.yDistance(node.virtualLocation)
+    };
+    let virtualLocation = new Position(position.x, position.y);
+    virtualLocation.move(offset.x, offset.y);
+    return virtualLocation;
+  }
+
   this.assemblePattern = function () {
-    // TODO Move in direction to form pattern
+    this.findPath(this.chooseTarget());
     this.moveTowards(this.chooseTarget());
+  }
+
+  this.findPath = function(target) {
+    let grid = new PathFinding.Grid(this.pattern.width, this.pattern.height);
+    var finder = new PathFinding.AStarFinder({
+      allowDiagonal: true,
+      dontCrossCorners: true
+    });
+    for(let i = 0; i < this.pattern.map.length; i++) {
+      let v = this.pattern.map[i].virtualLocation;
+        grid.setWalkableAt(v.x, v.y, !this.pattern.map[i].isOccupied);
+    }
+
+    let me = this.getVirtualLocation(this.position);
+
+    console.log(finder.findPath(me.x, me.y, target.x, target.y, grid));
   }
 
   this.mapPattern = function () {
@@ -127,7 +156,7 @@ var Bot = function (pos, address, pattern) {
     // Send message to other bots to inform them that a target has been filled
   }
 
-  this.acceptReachTarget = function () {
+  this.acceptReachTarget = function (target) {
     // Check if filled target was yours, if so replace your target.
 
   }
@@ -142,14 +171,6 @@ var Bot = function (pos, address, pattern) {
     return new Position(Math.floor(totalX / cluster.length), Math.floor(totalY / cluster.length));
   }
 
-  this.moveTowards = function (target) {
-    if (this.position.equals(target)) {
-      return new Position(0, 0);
-    }
-    let angleIncrement = Math.PI / 4;
-    let targetAngle = Math.round(Math.atan2(this.position.xDistance(target), this.position.yDistance(target)) / angleIncrement) * angleIncrement;
-    this.move(Math.round(Math.sin(targetAngle)), Math.round(Math.cos(targetAngle)));
-  }
 }
 
 
