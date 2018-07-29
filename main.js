@@ -5,11 +5,10 @@ var Maps = require('./classes/Maps.js');
 var helpers = require('./helpers');
 var main = {};
 var bots = [];
-var world = {};
 var pattern = {};
 
 main.init = function (data) {
-  world = data;
+  global.world = data;
   pattern = new Maps.solidSquare(world.numberOfBots);
   bots = [];
   setupWorld(world);

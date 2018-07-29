@@ -1,5 +1,6 @@
 var Message = require('./Message.js');
 var Position = require('./Position.js');
+var PathFinding = require('pathfinding');
 
 var Bot = function (pos, address, pattern) {
   this.position = pos;
@@ -12,6 +13,8 @@ var Bot = function (pos, address, pattern) {
   this.target = null;
   this.pattern = pattern;
   this.pattern.init();
+  this.path = [];
+
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function (message, type) {
     this.receivedMessages.push(message.id);
@@ -38,7 +41,7 @@ var Bot = function (pos, address, pattern) {
     }
   }
 
-  this.postCommunication = function() {
+  this.postCommunication = function () {
     this.moveCounter++;
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
       this.moveCounter = 0;
@@ -72,14 +75,55 @@ var Bot = function (pos, address, pattern) {
     // TODO Move in roaming pattern
   }
 
-  this.assemblePattern = function () {
-    // TODO Move in direction to form pattern'
-    this.target = this.chooseTarget()
-    if(this.target.equals(this.position)) {
-      this.reachTarget();
-    }else {
-      this.moveTowards(this.target);
+  this.getVirtualLocation = function (position) {
+    let node = this.pattern.map[0]
+    let offset = {
+      x: node.location.xDistance(node.virtualLocation),
+      y: node.location.yDistance(node.virtualLocation)
+    };
+    let virtualLocation = new Position(position.x, position.y);
+    virtualLocation.move(offset.x, offset.y);
+    return virtualLocation;
+  }
+
+  this.moveToNext = function () {
+    let next = this.path.shift();
+    console.log(next);
+    if(!this.move(next.x, next.y)) {
+      this.createPath();
+      this.moveToNext();
     }
+  }
+
+  this.assemblePattern = function () {
+    if(this.path.length === 0) {
+      this.createPath();
+    }
+    this.moveToNext();
+  }
+
+  this.createPath = function () {
+    this.path = [];
+    let path = this.findPath(this.chooseTarget());
+    for (i = 0; i < path.length; i++) {
+      this.path.push(new Position(path[i][0], path[i][1]));
+    }
+  }
+
+  this.findPath = function (target) {
+    let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
+    var finder = new PathFinding.AStarFinder({
+      allowDiagonal: true,
+      dontCrossCorners: true
+    });
+    for (let i = 0; i < this.neighbors.length; i++) {
+      let v = this.neighbors[i];
+      grid.setWalkableAt(v.x, v.y, !comSystem.spaceOccupied(v));
+    }
+
+    let me = this.position;
+
+    return finder.findPath(me.x, me.y, target.x, target.y, grid);
   }
 
   this.mapPattern = function () {
@@ -106,9 +150,9 @@ var Bot = function (pos, address, pattern) {
     };
     for (let i = 0; i < eligibleTargets.length; i++) {
       elem = eligibleTargets[i];
-      if(elem.isTarget && !elem.isOccupied) {
+      if (elem.isTarget && !elem.isOccupied) {
         let priorityScore = this.determinePriority(elem.location.distance(this.position), elem.priority);
-        if(priorityScore > nearestTarget.priorityScore) {
+        if (priorityScore > nearestTarget.priorityScore) {
           nearestTarget.target = elem.location;
           nearestTarget.priorityScore = priorityScore;
         }
@@ -130,8 +174,8 @@ var Bot = function (pos, address, pattern) {
     return eligibleTargets;
   }
 
-  this.determinePriority = function(distance, priority) {
-    return (1/(distance + 1)) + 2/priority;
+  this.determinePriority = function (distance, priority) {
+    return (1 / (distance + 1)) + 2 / priority;
   }
 
   this.reachTarget = function () {
@@ -157,14 +201,6 @@ var Bot = function (pos, address, pattern) {
     return new Position(Math.floor(totalX / cluster.length), Math.floor(totalY / cluster.length));
   }
 
-  this.moveTowards = function (target) {
-    if (this.position.equals(target)) {
-      return new Position(0, 0);
-    }
-    let angleIncrement = Math.PI / 4;
-    let targetAngle = Math.round(Math.atan2(this.position.xDistance(target), this.position.yDistance(target)) / angleIncrement) * angleIncrement;
-    this.move(Math.round(Math.sin(targetAngle)), Math.round(Math.cos(targetAngle)));
-  }
 }
 
 
