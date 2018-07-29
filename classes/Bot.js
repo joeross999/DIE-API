@@ -80,24 +80,23 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.assemblePattern = function () {
-    this.findPath(this.chooseTarget());
-    this.moveTowards(this.chooseTarget());
+    let path = this.findPath(this.chooseTarget());
   }
 
   this.findPath = function(target) {
-    let grid = new PathFinding.Grid(this.pattern.width, this.pattern.height);
+    let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
       dontCrossCorners: true
     });
-    for(let i = 0; i < this.pattern.map.length; i++) {
-      let v = this.pattern.map[i].virtualLocation;
-        grid.setWalkableAt(v.x, v.y, !this.pattern.map[i].isOccupied);
+    for(let i = 0; i < this.neighbors.length; i++) {
+      let v = this.neighbors[i];
+        grid.setWalkableAt(v.x, v.y, !comSystem.spaceOccupied(v));
     }
 
-    let me = this.getVirtualLocation(this.position);
+    let me = this.position;
 
-    console.log(finder.findPath(me.x, me.y, target.x, target.y, grid));
+    return finder.findPath(me.x, me.y, target.x, target.y, grid);
   }
 
   this.mapPattern = function () {
