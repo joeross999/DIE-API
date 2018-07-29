@@ -21,21 +21,21 @@ var Bot = function (pos, address, pattern) {
     this.receivedMessages.push(message.id);
     comSystem.broadcastMessage(this.address, message);
   }
-  
+
   this.createMessage = function (message, type) {
     return new Message(this.address, message, type);
   }
-  
+
   this.sendMessages = function (text) {
     this.broadcastMessage(this.createMessage(text, "position"));
   }
 
   this.receiveMessage = function (message) {
     if (!this.receivedMessages.includes(message.id)) {
-      if(message.type === "position") {
+      if (message.type === "position") {
         this.neighbors.push(message.text);
       }
-      if(message.type === "targetReached") {
+      if (message.type === "targetReached") {
         this.acceptReachTarget(message.text);
       }
       this.broadcastMessage(message);
@@ -83,7 +83,7 @@ var Bot = function (pos, address, pattern) {
       this.reachTarget();
     } else if (this.path.length != 0) {
       let next = this.path.shift();
-      if(!this.moveTowards(next)) {
+      if (!this.moveTowards(next)) {
         this.createPath();
         this.moveToNext();
       }
@@ -91,10 +91,10 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.assemblePattern = function () {
-    if(!this.hasReachedTarget && this.path.length === 0) {
+    if (!this.hasReachedTarget && this.path.length === 0) {
       this.createPath();
     }
-    if(!this.hasReachedTarget) {
+    if (!this.hasReachedTarget) {
       this.moveToNext();
     }
   }
@@ -102,11 +102,12 @@ var Bot = function (pos, address, pattern) {
   this.createPath = function () {
     this.path = [];
     this.target = this.chooseTarget();
-    if(this.neighbors.length > 10) {
-      console.log("THIS: " + this.position.x + ", " + this.position.y)
-      console.log("ORIGIN: " + this.origin.x + ", " + this.origin.y)
-      console.log("TARGET: " + this.target.x + ", " + this.target.y)
-    }
+    // console.log("THIS: " + this.position.x + ", " + this.position.y)
+    // console.log("ORIGIN: " + this.origin.x + ", " + this.origin.y)
+    // console.log("TARGET: " + this.target.x + ", " + this.target.y)
+    // for (let i = 0; i < pattern.size; i++) {
+    //   console.log("MAP: " + this.pattern.map[i].location.x + ": " + this.pattern.map[i].location.y + ": " + this.pattern.map[i].isOccupied);
+    // }
     let path = this.findPath();
     for (i = 0; i < path.length; i++) {
       this.path.push(new Position(path[i][0], path[i][1]));
@@ -146,6 +147,7 @@ var Bot = function (pos, address, pattern) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
+    console.log(eligibleTargets.length)
     // Choose target from open options
     let nearestTarget = {
       "target": eligibleTargets[0].location,
@@ -177,8 +179,9 @@ var Bot = function (pos, address, pattern) {
     return eligibleTargets;
   }
 
+  // TODO Functional but needs to be reworked
   this.determinePriority = function (distance, priority) {
-    return (1 / (distance + 1)) + 2 / priority;
+    return (1 / (distance + 1)) + 25 / priority;
   }
 
   this.reachTarget = function () {
@@ -188,12 +191,12 @@ var Bot = function (pos, address, pattern) {
 
   this.acceptReachTarget = function (target) {
     // Check if filled target was yours, if so replace your target.
-    for(let i = 0; i < this.pattern.map.length; i++) {
-      if(this.pattern.map[i].location.equals(target)) {
+    for (let i = 0; i < this.pattern.map.length; i++) {
+      if (this.pattern.map[i].location.equals(target)) {
         this.pattern.map[i].isOccupied = true;
       }
     }
-    if(this.target != null && target.equals(this.target)) {
+    if (this.target != null && target.equals(this.target)) {
       this.createPath();
     }
   }
