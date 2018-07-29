@@ -102,12 +102,6 @@ var Bot = function (pos, address, pattern) {
   this.createPath = function () {
     this.path = [];
     this.target = this.chooseTarget();
-    // console.log("THIS: " + this.position.x + ", " + this.position.y)
-    // console.log("ORIGIN: " + this.origin.x + ", " + this.origin.y)
-    // console.log("TARGET: " + this.target.x + ", " + this.target.y)
-    // for (let i = 0; i < pattern.size; i++) {
-    //   console.log("MAP: " + this.pattern.map[i].location.x + ": " + this.pattern.map[i].location.y + ": " + this.pattern.map[i].isOccupied);
-    // }
     let path = this.findPath();
     for (i = 0; i < path.length; i++) {
       this.path.push(new Position(path[i][0], path[i][1]));
@@ -147,7 +141,6 @@ var Bot = function (pos, address, pattern) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
-    console.log(eligibleTargets.length)
     // Choose target from open options
     let nearestTarget = {
       "target": eligibleTargets[0].location,
