@@ -12,6 +12,7 @@ var Bot = function (pos, address, pattern) {
   this.moveCounter = 0;
   this.pattern = pattern;
   this.pattern.init();
+  this.path = [];
 
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function (message) {
@@ -34,7 +35,7 @@ var Bot = function (pos, address, pattern) {
     }
   }
 
-  this.postCommunication = function() {
+  this.postCommunication = function () {
     this.moveCounter++;
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
       this.moveCounter = 0;
@@ -79,19 +80,39 @@ var Bot = function (pos, address, pattern) {
     return virtualLocation;
   }
 
-  this.assemblePattern = function () {
-    let path = this.findPath(this.chooseTarget());
+  this.moveToNext = function () {
+    let next = this.path.shift();
+    console.log(next);
+    if(!this.move(next.x, next.y)) {
+      this.createPath();
+      this.moveToNext();
+    }
   }
 
-  this.findPath = function(target) {
+  this.assemblePattern = function () {
+    if(this.path.length === 0) {
+      this.createPath();
+    }
+    this.moveToNext();
+  }
+
+  this.createPath = function () {
+    this.path = [];
+    let path = this.findPath(this.chooseTarget());
+    for (i = 0; i < path.length; i++) {
+      this.path.push(new Position(path[i][0], path[i][1]));
+    }
+  }
+
+  this.findPath = function (target) {
     let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
       dontCrossCorners: true
     });
-    for(let i = 0; i < this.neighbors.length; i++) {
+    for (let i = 0; i < this.neighbors.length; i++) {
       let v = this.neighbors[i];
-        grid.setWalkableAt(v.x, v.y, !comSystem.spaceOccupied(v));
+      grid.setWalkableAt(v.x, v.y, !comSystem.spaceOccupied(v));
     }
 
     let me = this.position;
@@ -123,9 +144,9 @@ var Bot = function (pos, address, pattern) {
     };
     for (let i = 0; i < eligibleTargets.length; i++) {
       elem = eligibleTargets[i];
-      if(elem.isTarget && !elem.isOccupied) {
+      if (elem.isTarget && !elem.isOccupied) {
         let priorityScore = this.determinePriority(elem.location.distance(this.position), elem.priority);
-        if(priorityScore > nearestTarget.priorityScore) {
+        if (priorityScore > nearestTarget.priorityScore) {
           nearestTarget.target = elem.location;
           nearestTarget.priorityScore = priorityScore;
         }
@@ -147,8 +168,8 @@ var Bot = function (pos, address, pattern) {
     return eligibleTargets;
   }
 
-  this.determinePriority = function(distance, priority) {
-    return (1/(distance + 1)) + 2/priority;
+  this.determinePriority = function (distance, priority) {
+    return (1 / (distance + 1)) + 2 / priority;
   }
 
   this.reachTarget = function () {
