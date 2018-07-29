@@ -14,6 +14,7 @@ var Bot = function (pos, address, pattern) {
   this.pattern = pattern;
   this.pattern.init();
   this.path = [];
+  this.hasReachedTarget = false;
 
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function (message, type) {
@@ -49,6 +50,7 @@ var Bot = function (pos, address, pattern) {
       cluster.push(this.position);
       this.origin = this.calcOrigin(cluster);
       this.mapPattern();
+      this.hasReachedTarget = false;
     }
   }
 
@@ -75,42 +77,44 @@ var Bot = function (pos, address, pattern) {
     // TODO Move in roaming pattern
   }
 
-  this.getVirtualLocation = function (position) {
-    let node = this.pattern.map[0]
-    let offset = {
-      x: node.location.xDistance(node.virtualLocation),
-      y: node.location.yDistance(node.virtualLocation)
-    };
-    let virtualLocation = new Position(position.x, position.y);
-    virtualLocation.move(offset.x, offset.y);
-    return virtualLocation;
-  }
-
   this.moveToNext = function () {
-    let next = this.path.shift();
-    console.log(next);
-    if(!this.move(next.x, next.y)) {
-      this.createPath();
-      this.moveToNext();
+    if (this.position.equals(this.target)) {
+      this.hasReachedTarget = true;
+      this.reachTarget();
+    } else if (this.path.length != 0) {
+      let next = this.path.shift();
+      if(!this.moveTowards(next)) {
+        this.createPath();
+        this.moveToNext();
+      }
     }
   }
 
   this.assemblePattern = function () {
-    if(this.path.length === 0) {
+    if(!this.hasReachedTarget && this.path.length === 0) {
       this.createPath();
     }
-    this.moveToNext();
+    if(!this.hasReachedTarget) {
+      this.moveToNext();
+    }
   }
 
   this.createPath = function () {
     this.path = [];
-    let path = this.findPath(this.chooseTarget());
+    this.target = this.chooseTarget();
+    if(this.neighbors.length > 10) {
+      console.log("THIS: " + this.position.x + ", " + this.position.y)
+      console.log("ORIGIN: " + this.origin.x + ", " + this.origin.y)
+      console.log("TARGET: " + this.target.x + ", " + this.target.y)
+    }
+    let path = this.findPath();
     for (i = 0; i < path.length; i++) {
       this.path.push(new Position(path[i][0], path[i][1]));
     }
   }
 
-  this.findPath = function (target) {
+  this.findPath = function () {
+    // Uses pathfinding library to find new path to target
     let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
@@ -120,15 +124,14 @@ var Bot = function (pos, address, pattern) {
       let v = this.neighbors[i];
       grid.setWalkableAt(v.x, v.y, !comSystem.spaceOccupied(v));
     }
-
     let me = this.position;
-
-    return finder.findPath(me.x, me.y, target.x, target.y, grid);
+    return finder.findPath(me.x, me.y, this.target.x, this.target.y, grid);
   }
 
   this.mapPattern = function () {
     for (let i = 0; i < pattern.size; i++) {
       elem = pattern.map[i];
+      elem.isOccupied = false;
       elem.location = new Position(elem.virtualLocation.x, elem.virtualLocation.y);
       elem.location.move(pattern.virtualOrigin.xDistance(this.origin), pattern.virtualOrigin.yDistance(this.origin));
     }
@@ -183,12 +186,16 @@ var Bot = function (pos, address, pattern) {
     this.broadcastMessage(this.createMessage(this.position, "targetReached"));
   }
 
-  this.acceptReachTarget = function (message) {
+  this.acceptReachTarget = function (target) {
     // Check if filled target was yours, if so replace your target.
-    if(message.equals(this.target)) {
-      this.target = this.chooseTarget();
+    for(let i = 0; i < this.pattern.map.length; i++) {
+      if(this.pattern.map[i].location.equals(target)) {
+        this.pattern.map[i].isOccupied = true;
+      }
     }
-    // CALL Pathfinding
+    if(this.target != null && target.equals(this.target)) {
+      this.createPath();
+    }
   }
 
   this.calcOrigin = function (cluster) {
@@ -199,6 +206,26 @@ var Bot = function (pos, address, pattern) {
       totalY += cluster[i].y;
     }
     return new Position(Math.floor(totalX / cluster.length), Math.floor(totalY / cluster.length));
+  }
+
+  this.moveTowards = function (target) {
+    if (this.position.equals(target)) {
+      return new Position(0, 0);
+    }
+    let angleIncrement = Math.PI / 4;
+    let targetAngle = Math.round(Math.atan2(this.position.xDistance(target), this.position.yDistance(target)) / angleIncrement) * angleIncrement;
+    this.move(Math.round(Math.sin(targetAngle)), Math.round(Math.cos(targetAngle)));
+  }
+
+  this.getVirtualLocation = function (position) {
+    let node = this.pattern.map[0]
+    let offset = {
+      x: node.location.xDistance(node.virtualLocation),
+      y: node.location.yDistance(node.virtualLocation)
+    };
+    let virtualLocation = new Position(position.x, position.y);
+    virtualLocation.move(offset.x, offset.y);
+    return virtualLocation;
   }
 
 }
