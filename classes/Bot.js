@@ -113,11 +113,11 @@ var Bot = function (pos, address, pattern) {
     let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
-      dontCrossCorners: true
+      //dontCrossCorners: true
     });
     for (let i = 0; i < this.neighbors.length; i++) {
       let v = this.neighbors[i];
-      grid.setWalkableAt(v.x, v.y, !comSystem.spaceOccupied(v));
+      grid.setWalkableAt(v.x, v.y, false);
     }
     let me = this.position;
     return finder.findPath(me.x, me.y, this.target.x, this.target.y, grid);
@@ -141,6 +141,7 @@ var Bot = function (pos, address, pattern) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
+
     // Choose target from open options
     let nearestTarget = {
       "target": eligibleTargets[0].location,
