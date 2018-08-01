@@ -29,15 +29,9 @@ app.post('/init', function(req, res){
   res.json({"bots": result.bots.map(bot => {return {'pos': bot.position, 'color': bot.color}}), "world": result.world});
 });
 
-
 app.get('/refresh', function(req, res){
   res.json(main.frame().map(bot => {return {'pos': bot.position, 'color': bot.color}}));
 });
-
-app.get('/test', function(req, res){
-  res.json(main.test());
-});
-
 
 
 app.listen(port);

@@ -1,20 +1,24 @@
 var Position = require('./classes/Position');
 var Bot = require('./classes/Bot.js');
 var ComSystem = require('./classes/ComSystem.js');
+var Maps = require('./classes/Maps.js');
 var helpers = require('./helpers');
 var main = {};
 var bots = [];
-var world = {};
+var pattern = {};
 
 main.init = function (data) {
-  world = data;
+  global.world = data;
+  pattern = new Maps.checkerboardSquare(world.numberOfBots);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
   // TODO generate random addresses
 
   for (var i = 0; i < world.numberOfBots; i++) {
-    bots.push(new Bot(points[i], i));
+    newPattern = Object.assign({}, pattern);
+    newPattern.init = pattern.init;
+    bots.push(new Bot(points[i], i, newPattern));
   }
 
   // Initialize Communication System
@@ -31,23 +35,23 @@ main.init = function (data) {
 
 main.frame = function () {
   comSystem.setSubscriberList();
-  stepBots();
   sendMessages();
-  setBotColor();
+  postCommunication();
   moveBots();
-
+  cleanupBots();
+  setBotColor();
   return bots;
 }
 
 function moveBots() {
   for (var i = 0; i < bots.length; i++) {
-    if (bots[i].neighbors.length === 0) {
-      bots[i].move(1, 1);
-    } else if (bots[i].neighbors.length < 2) {
-      bots[i].move(0, -1);
-    } else {
-      bots[i].move(5, 0)
-    }
+    bots[i].assemblePattern();
+  }
+}
+
+function postCommunication() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].postCommunication();
   }
 }
 
@@ -71,15 +75,15 @@ function setupWorld(world) {
     x: {},
     y: {}
   }
-  world.spawnRange.x.min = world.worldBounds.x/4;
-  world.spawnRange.x.max = world.worldBounds.x/4*3;
-  world.spawnRange.y.min = world.worldBounds.y/4;
-  world.spawnRange.y.max = world.worldBounds.y/4*3;
+  world.spawnRange.x.min = world.worldBounds.x / 4;
+  world.spawnRange.x.max = world.worldBounds.x / 4 * 3;
+  world.spawnRange.y.min = world.worldBounds.y / 4;
+  world.spawnRange.y.max = world.worldBounds.y / 4 * 3;
 }
 
 function setBotColor() {
   for (var i = 0; i < bots.length; i++) {
-    switch (bots[i].neighbors.length) {
+    switch (bots[i].lastTurnNeigborsLength) {
       case 0:
         bots[i].color = "black";
         break;
@@ -104,15 +108,15 @@ function setBotColor() {
   }
 }
 
-function stepBots() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].step();
-  }
-}
-
 function sendMessages() {
   for (var i = 0; i < bots.length; i++) {
     bots[i].sendMessages(bots[i].position);
+  }
+}
+
+function cleanupBots() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].cleanup();
   }
 }
 
