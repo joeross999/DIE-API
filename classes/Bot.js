@@ -44,12 +44,12 @@ var Bot = function (pos, address, pattern) {
 
   this.postCommunication = function () {
     this.moveCounter++;
+    let cluster = this.neighbors.slice();
+    cluster.push(this.position);
+    this.origin = this.calcOrigin(cluster);
+    this.mapPattern();
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
       this.moveCounter = 0;
-      let cluster = this.neighbors.slice();
-      cluster.push(this.position);
-      this.origin = this.calcOrigin(cluster);
-      this.mapPattern();
       this.hasReachedTarget = false;
     }
   }
@@ -79,13 +79,12 @@ var Bot = function (pos, address, pattern) {
 
   this.moveToNext = function () {
     if (this.position.equals(this.target)) {
-      this.hasReachedTarget = true;
       this.reachTarget();
-    } else if (this.path.length != 0) {
+    } else if (this.path.length > 0) {
       let next = this.path.shift();
       if (!this.moveTowards(next)) {
         this.createPath();
-        this.moveToNext();
+        // this.moveToNext();
       }
     }
   }
@@ -103,7 +102,7 @@ var Bot = function (pos, address, pattern) {
     this.path = [];
     this.target = this.chooseTarget();
     let path = this.findPath();
-    for (i = 0; i < path.length; i++) {
+    for (i = 1; i < path.length; i++) {
       this.path.push(new Position(path[i][0], path[i][1]));
     }
   }
@@ -137,11 +136,10 @@ var Bot = function (pos, address, pattern) {
     let targetDistance = 0;
     let minimunNumberOfTargets = 5;
     let eligibleTargets = []
-    while (eligibleTargets.length <= minimunNumberOfTargets) {
+    while (eligibleTargets.length <= minimunNumberOfTargets && targetDistance < Math.ceil(this.pattern.width / 2)) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
-
     // Choose target from open options
     let nearestTarget = {
       "target": eligibleTargets[0].location,
@@ -157,6 +155,7 @@ var Bot = function (pos, address, pattern) {
         }
       }
     }
+
     return nearestTarget.target;
   }
 
@@ -180,6 +179,7 @@ var Bot = function (pos, address, pattern) {
 
   this.reachTarget = function () {
     // Send message to other bots to inform them that a target has been filled
+    this.hasReachedTarget = true;
     this.broadcastMessage(this.createMessage(this.position, "targetReached"));
   }
 

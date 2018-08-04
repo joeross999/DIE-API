@@ -3,13 +3,26 @@ var Bot = require('./classes/Bot.js');
 var ComSystem = require('./classes/ComSystem.js');
 var Maps = require('./classes/Maps.js');
 var helpers = require('./helpers');
+const f = require('util').format;
+var MongoClient = require('mongodb').MongoClient;
+
+// Database setup
+const user = encodeURIComponent('tester1');
+const password = encodeURIComponent('tester1');
+const authMechanism = 'DEFAULT';
+const dbURL = f('mongodb://%s:%s@ds111082.mlab.com:11082/distributed-intelligence-experiment?authMechanism=%s',
+  user, password, authMechanism);
+
 var main = {};
 var bots = [];
-var pattern = {};
+let db = {};
 
-main.init = function (data) {
+
+main.init = function (data, res, userID) {
+  console.log("main.init")
   global.world = data;
-  pattern = new Maps.checkerboardSquare(world.numberOfBots);
+  global.world.patternType = "checkerboardSquare"
+  let pattern = new Maps[world.patternType](world.numberOfBots);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
@@ -24,23 +37,78 @@ main.init = function (data) {
   // Initialize Communication System
   global.comSystem = new ComSystem(bots, world.wirelessRange);
 
-
   setBotColor();
-
-  return {
-    "bots": bots,
-    "world": world.worldBounds
-  };
+  db.insert({
+    "userID": userID,
+    "world": global.world,
+    // "bots": bots,
+    "bots": bots.map(bot => {
+      return {
+        'pos': bot.position,
+        'address': bot.address
+      }
+    })
+  }, dbURL, finishInit, res);
 };
 
-main.frame = function () {
+main.frame = function (res, userID) {
+  console.log("main.frame")
+  db.find({
+    "userID": userID
+  }, dbURL, continueFrame, res, userID);
+}
+
+function finishInit(res) {
+  console.log("finishInit")
+  res.json({
+    "bots": bots.map(bot => {
+      return {
+        'pos': bot.position,
+        'color': bot.color
+      }
+    }),
+    "world": global.world
+  });
+}
+
+function continueFrame(doc, res, userID) {
+  console.log("continueFrame")
+  global.world = doc.world;
+  let pattern = new Maps[world.patternType](world.numberOfBots);
+  bots = [];
+  for(let i = 0; i < doc.bots.length; i++){
+    newPattern = Object.assign({}, pattern);
+    newPattern.init = pattern.init;
+    bots.push(new Bot(new Position(doc.bots[i].pos.x, doc.bots[i].pos.y), doc.bots[i].address, newPattern));
+  };
+  global.comSystem = new ComSystem(bots, world.wirelessRange);
   comSystem.setSubscriberList();
   sendMessages();
   postCommunication();
   moveBots();
   cleanupBots();
   setBotColor();
-  return bots;
+  db.update({
+    "userID": userID
+  }, {
+    $set: {
+      "bots": bots.map(bot => {
+        return {
+          'pos': bot.position,
+          'address': bot.address
+        }
+      })
+    }
+  }, dbURL, finishFrame, res);
+}
+
+function finishFrame(res) {
+  res.json(bots.map(bot => {
+    return {
+      'pos': bot.position,
+      'color': bot.color
+    }
+  }));
 }
 
 function moveBots() {
@@ -119,5 +187,49 @@ function cleanupBots() {
     bots[i].cleanup();
   }
 }
+
+
+db.insert = function (obj, url, callback, browserResult) {
+  MongoClient.connect(url, {
+    useNewUrlParser: true
+  }, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db("distributed-intelligence-experiment");
+    dbo.collection("worlds").insertOne(obj, function (err, res) {
+      if (err) throw err;
+      db.close();
+      callback(browserResult);
+    });
+  });
+}
+
+db.update = function (query, newValues, url, callback, browserResult) {
+  MongoClient.connect(url, {
+    useNewUrlParser: true
+  }, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db("distributed-intelligence-experiment");
+    dbo.collection("worlds").updateOne(query, newValues, function (err, res) {
+      if (err) throw err;
+      db.close();
+      callback(browserResult);
+    });
+  });
+}
+
+db.find = function (query, url, callback, browserResult, userID) {
+  MongoClient.connect(url, {
+    useNewUrlParser: true
+  }, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db("distributed-intelligence-experiment");
+    dbo.collection("worlds").findOne(query, function (err, res) {
+      if (err) throw err;
+      db.close();
+      callback(res, browserResult, userID)
+    });
+  });
+}
+
 
 module.exports = main;

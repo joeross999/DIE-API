@@ -23,14 +23,13 @@ app.use(bodyParser.urlencoded({
 app.get('/', function(req, res){
   res.render('index');
 });
-
+let testUser = "TESTUSER"
 app.post('/init', function(req, res){
-  result = main.init(req.body);
-  res.json({"bots": result.bots.map(bot => {return {'pos': bot.position, 'color': bot.color}}), "world": result.world});
+  main.init(req.body, res, testUser);
 });
 
 app.get('/refresh', function(req, res){
-  res.json(main.frame().map(bot => {return {'pos': bot.position, 'color': bot.color}}));
+  main.frame(res, testUser);
 });
 
 
