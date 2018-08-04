@@ -19,7 +19,6 @@ let db = {};
 
 
 main.init = function (data, res, userID) {
-  console.log("main.init")
   global.world = data;
   global.world.patternType = "checkerboardSquare"
   let pattern = new Maps[world.patternType](world.numberOfBots);
@@ -27,7 +26,6 @@ main.init = function (data, res, userID) {
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
   // TODO generate random addresses
-
   for (var i = 0; i < world.numberOfBots; i++) {
     newPattern = Object.assign({}, pattern);
     newPattern.init = pattern.init;
@@ -52,14 +50,12 @@ main.init = function (data, res, userID) {
 };
 
 main.frame = function (res, userID) {
-  console.log("main.frame")
   db.find({
     "userID": userID
   }, dbURL, continueFrame, res, userID);
 }
 
 function finishInit(res) {
-  console.log("finishInit")
   res.json({
     "bots": bots.map(bot => {
       return {
@@ -72,7 +68,6 @@ function finishInit(res) {
 }
 
 function continueFrame(doc, res, userID) {
-  console.log("continueFrame")
   global.world = doc.world;
   let pattern = new Maps[world.patternType](world.numberOfBots);
   bots = [];
@@ -112,6 +107,9 @@ function finishFrame(res) {
 }
 
 function moveBots() {
+  for (var i = 0; i < bots.length; i++) {
+    bots[i].targetCheck();
+  }
   for (var i = 0; i < bots.length; i++) {
     bots[i].assemblePattern();
   }

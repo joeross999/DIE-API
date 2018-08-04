@@ -78,6 +78,7 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.moveToNext = function () {
+    this.target = this.chooseTarget();
     if (this.position.equals(this.target)) {
       this.reachTarget();
     } else if (this.path.length > 0) {
@@ -89,11 +90,18 @@ var Bot = function (pos, address, pattern) {
     }
   }
 
-  this.assemblePattern = function () {
-    if (!this.hasReachedTarget && this.path.length === 0) {
-      this.createPath();
+  this.targetCheck = function () {
+    this.target = this.chooseTarget();
+    if (this.position.equals(this.target)) {
+      this.reachTarget();
     }
+  }
+
+  this.assemblePattern = function () {
     if (!this.hasReachedTarget) {
+      if (this.path.length === 0) {
+        this.createPath();
+      }
       this.moveToNext();
     }
   }
@@ -112,7 +120,7 @@ var Bot = function (pos, address, pattern) {
     let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
-      //dontCrossCorners: true
+      dontCrossCorners: false
     });
     for (let i = 0; i < this.neighbors.length; i++) {
       let v = this.neighbors[i];
