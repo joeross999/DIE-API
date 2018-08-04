@@ -15,6 +15,11 @@ var Bot = function (pos, address, pattern) {
   this.pattern.init();
   this.path = [];
   this.hasReachedTarget = false;
+  this.roamSpiral = {};
+  this.roamSpiral.numSteps = 0;
+  this.roamSpiral.dir = 0;
+  this.roamSpiral.stepsLeft = 0;
+  this.roamSpiral.cycleStep = 1;
 
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function (message, type) {
@@ -51,6 +56,9 @@ var Bot = function (pos, address, pattern) {
       this.origin = this.calcOrigin(cluster);
       this.mapPattern();
       this.hasReachedTarget = false;
+      this.roamSpiral.numSteps = 0;
+      this.roamSpiral.dir = 0;
+      this.roamSpiral.stepsLeft = 0;
     }
   }
 
@@ -74,7 +82,31 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.roam = function () {
-    // TODO Move in roaming pattern
+    if(this.address == 0) {
+      console.log(this.roamSpiral);
+    }
+    if(this.roamSpiral.stepsLeft == 0) {
+      if(this.roamSpiral.dir == 0 || this.roamSpiral.dir == 2) {
+        this.roamSpiral.numSteps += this.roamSpiral.cycleStep;
+      }
+      this.roamSpiral.stepsLeft = (this.roamSpiral.numSteps) * Math.ceil(Math.sqrt(this.neighbors.length + 1));
+      this.roamSpiral.dir = (this.roamSpiral.dir + 1);
+      this.roamSpiral.dir %= 4;
+    }
+    if(this.roamSpiral.dir == 0) {
+      this.position.move(1, 0);
+    } if(this.roamSpiral.dir == 1) {
+      this.position.move(0, -1);
+    } if(this.roamSpiral.dir == 2) {
+      this.position.move(-1, 0);
+    } if(this.roamSpiral.dir == 3) {
+      this.position.move(0, 1);
+    }
+    this.roamSpiral.stepsLeft--;
+
+    let cluster = this.neighbors.slice();
+    cluster.push(this.position);
+    this.origin = this.calcOrigin(cluster);
   }
 
   this.moveToNext = function () {
@@ -83,14 +115,20 @@ var Bot = function (pos, address, pattern) {
       this.reachTarget();
     } else if (this.path.length != 0) {
       let next = this.path.shift();
+
       if (!this.moveTowards(next)) {
         this.createPath();
-        this.moveToNext();
+        if(this.path.length != 0) {
+          this.moveToNext();
+        }
       }
     }
   }
 
   this.assemblePattern = function () {
+    if(this.moveCounter%5 == 0) {
+      this.roam();
+    }
     if (!this.hasReachedTarget && this.path.length === 0) {
       this.createPath();
     }
@@ -103,7 +141,7 @@ var Bot = function (pos, address, pattern) {
     this.path = [];
     this.target = this.chooseTarget();
     let path = this.findPath();
-    for (i = 0; i < path.length; i++) {
+    for (i = 1; i < path.length; i++) {
       this.path.push(new Position(path[i][0], path[i][1]));
     }
   }
