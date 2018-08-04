@@ -2,7 +2,7 @@ let Position = require('./Position');
 
 let solidSquare = function (bots) {
   this.size = bots;
-  this.width = Math.sqrt(size);
+  this.width = Math.ceil(Math.sqrt(this.size));
   this.map;
 
   this.init = function () {
@@ -24,7 +24,7 @@ let solidSquare = function (bots) {
 
 let checkerboardSquare = function (bots) {
   this.size = bots * 2;
-  this.width = Math.sqrt(this.size);
+  this.width = Math.ceil(Math.sqrt(this.size));
   this.map;
 
   this.init = function () {
