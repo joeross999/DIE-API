@@ -15,6 +15,7 @@ var worldSizeXSelector = $("#world-size-x");
 var worldSizeYSelector = $("#world-size-y");
 var speedSelector = $("#speed");
 let reset;
+let pause = false;
 let overlayVisable = true;
 
 // Object containing information about world
@@ -54,7 +55,7 @@ function refresh() {
       dataType: "json",
       success: function (res) {
         drawMap(res, world);
-        refresh();
+        if(!pause) refresh();
       }
     });
   }, world.speed);
@@ -126,12 +127,14 @@ function stopSimulation () {
     opacity: "0"
   }, 300, function() {
     clearTimeout(reset);
+    pause = true;
   });
 }
 
 // Clears and then fades in grid
 // Starts the simulation
 function startSimulation() {
+  pause = false;
   drawMap({}, world);
   toggleOverlay();
   worldContainer.animate({
