@@ -15,6 +15,7 @@ var Bot = function (pos, address, pattern) {
   this.pattern.init();
   this.path = [];
   this.hasReachedTarget = false;
+  this.numComplete = 0;
   this.roamSpiral = {};
   this.roamSpiral.numSteps = 0;
   this.roamSpiral.dir = 0;
@@ -59,6 +60,7 @@ var Bot = function (pos, address, pattern) {
       this.roamSpiral.numSteps = 0;
       this.roamSpiral.dir = 0;
       this.roamSpiral.stepsLeft = 0;
+      this.numComplete = 0;
     }
   }
 
@@ -126,14 +128,15 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.assemblePattern = function () {
-    if(this.moveCounter%5 == 0) {
+    if((this.numComplete == (this.neighbors.length + 1)) || this.neighbors.size+1 < Math.ceil(this.pattern.size/2)) {
       this.roam();
-    }
-    if (!this.hasReachedTarget && this.path.length === 0) {
-      this.createPath();
-    }
-    if (!this.hasReachedTarget) {
-      this.moveToNext();
+    } else {
+      if (!this.hasReachedTarget && this.path.length === 0) {
+        this.createPath();
+      }
+      if (!this.hasReachedTarget) {
+        this.moveToNext();
+      }
     }
   }
 
@@ -219,6 +222,7 @@ var Bot = function (pos, address, pattern) {
   this.reachTarget = function () {
     // Send message to other bots to inform them that a target has been filled
     this.broadcastMessage(this.createMessage(this.position, "targetReached"));
+    this.numComplete++;
   }
 
   this.acceptReachTarget = function (target) {
@@ -231,6 +235,7 @@ var Bot = function (pos, address, pattern) {
     if (this.target != null && target.equals(this.target)) {
       this.createPath();
     }
+    this.numComplete++;
   }
 
   this.calcOrigin = function (cluster) {
