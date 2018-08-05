@@ -55,7 +55,9 @@ function continueInit(res, userID) {
     "bots": bots.map(bot => {
       return {
         'pos': bot.position,
-        'address': bot.address
+        'address': bot.address,
+        'origin': bot.origin,
+        'lastTurnNeigborsLength': bot.lastTurnNeigborsLength
       }
     })
   }, dbURL, finishInit, res);
@@ -78,9 +80,13 @@ function continueFrame(doc, res, userID) {
   let pattern = new Maps[world.patternType](world.numberOfBots);
   bots = [];
   for(let i = 0; i < doc.bots.length; i++){
+    elem = doc.bots[i];
     newPattern = Object.assign({}, pattern);
     newPattern.init = pattern.init;
-    bots.push(new Bot(new Position(doc.bots[i].pos.x, doc.bots[i].pos.y), doc.bots[i].address, newPattern));
+    newBot = new Bot(new Position(elem.pos.x, elem.pos.y), elem.address, newPattern);
+    newBot.origin = new Position(elem.origin.x, elem.origin.y);
+    newBot.lastTurnNeigborsLength = elem.lastTurnNeigborsLength;
+    bots.push(newBot);
   };
   global.comSystem = new ComSystem(bots, world.wirelessRange);
   comSystem.setSubscriberList();
@@ -96,7 +102,9 @@ function continueFrame(doc, res, userID) {
       "bots": bots.map(bot => {
         return {
           'pos': bot.position,
-          'address': bot.address
+          'address': bot.address,
+          'origin': bot.origin,
+          'lastTurnNeigborsLength': bot.lastTurnNeigborsLength
         }
       })
     }

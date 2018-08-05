@@ -44,14 +44,14 @@ var Bot = function (pos, address, pattern) {
 
   this.postCommunication = function () {
     this.moveCounter++;
-    let cluster = this.neighbors.slice();
-    cluster.push(this.position);
-    this.origin = this.calcOrigin(cluster);
-    this.mapPattern();
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
+      let cluster = this.neighbors.slice();
+      cluster.push(this.position);
+      this.origin = this.calcOrigin(cluster);
       this.moveCounter = 0;
       this.hasReachedTarget = false;
     }
+    this.mapPattern();
   }
 
   this.cleanup = function () {
