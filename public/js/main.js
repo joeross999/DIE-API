@@ -16,6 +16,7 @@ var worldSizeYSelector = $("#world-size-y");
 var speedSelector = $("#speed");
 let reset;
 let pause = false;
+let running = false;
 let overlayVisable = true;
 
 // Object containing information about world
@@ -35,6 +36,7 @@ let defaultWorld = {
 world = JSON.parse(JSON.stringify(defaultWorld));
 // Initialize Simulation
 function initSim() {
+  running = true;
   $.post({
     url: "http://localhost:3000/init",
     data: world,
@@ -55,7 +57,7 @@ function refresh() {
       dataType: "json",
       success: function (res) {
         drawMap(res, world);
-        if(!pause) refresh();
+        if (running) refresh();
       }
     });
   }, world.speed);
@@ -122,10 +124,11 @@ function toggleOverlay() {
 }
 
 // Sopts the simulation and fades out the grid
-function stopSimulation () {
+function stopSimulation() {
+  running = false;
   worldContainer.animate({
     opacity: "0"
-  }, 300, function() {
+  }, 300, function () {
     clearTimeout(reset);
     pause = true;
   });
@@ -134,12 +137,11 @@ function stopSimulation () {
 // Clears and then fades in grid
 // Starts the simulation
 function startSimulation() {
-  pause = false;
   drawMap({}, world);
   toggleOverlay();
   worldContainer.animate({
     opacity: "1"
-  }, 750, function() {
+  }, 750, function () {
     initSim();
   });
 }
@@ -165,19 +167,39 @@ function initInputs() {
   worldSizeYSelector.val(world.worldBounds.y);
 }
 
+function setResetButtonText() {
+  console.log("setResetButtonText")
+  console.log(running);
+  if (running) {
+    console.log($("#reset-button"));
+    $("#reset-button").text("Stop Simulation");
+  } else {
+    $("#reset-button").text("Reset Simulation");
+  }
+}
+
 // Slider listener
-numberOfBotsSelector.get(0).oninput = function() {
+numberOfBotsSelector.get(0).oninput = function () {
   numberOfBotsOutput.html(this.value);
 };
 // Button Listeners
 $("#reset-button").on("click", function () {
-  clearTimeout(reset);
-  initSim();
+  if (running) {
+    running = false;
+    pause = true;
+    clearTimeout(reset);
+    setResetButtonText()
+  } else {
+    initSim();
+    setResetButtonText()
+  }
 });
 
 $(".go-button").on("click", function () {
+  running = true;
   initWorldSettings();
   startSimulation();
+  setResetButtonText()
 });
 
 $(".change-settings").on("click", function () {
