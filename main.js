@@ -57,7 +57,8 @@ function continueInit(res, userID) {
         'pos': bot.position,
         'address': bot.address,
         'origin': bot.origin,
-        'lastTurnNeigborsLength': bot.lastTurnNeigborsLength
+        'lastTurnNeigborsLength': bot.lastTurnNeigborsLength,
+        "target": bot.target
       }
     })
   }, dbURL, finishInit, res);
@@ -85,6 +86,7 @@ function continueFrame(doc, res, userID) {
     newPattern.init = pattern.init;
     newBot = new Bot(new Position(elem.pos.x, elem.pos.y), elem.address, newPattern);
     newBot.origin = new Position(elem.origin.x, elem.origin.y);
+    if(elem.target) newBot.target = new Position(elem.target.x, elem.target.y);
     newBot.lastTurnNeigborsLength = elem.lastTurnNeigborsLength;
     bots.push(newBot);
   };
@@ -104,7 +106,8 @@ function continueFrame(doc, res, userID) {
           'pos': bot.position,
           'address': bot.address,
           'origin': bot.origin,
-          'lastTurnNeigborsLength': bot.lastTurnNeigborsLength
+          'lastTurnNeigborsLength': bot.lastTurnNeigborsLength,
+          "target": bot.target
         }
       })
     }

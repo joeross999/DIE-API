@@ -50,6 +50,7 @@ var Bot = function (pos, address, pattern) {
       this.origin = this.calcOrigin(cluster);
       this.moveCounter = 0;
       this.hasReachedTarget = false;
+      this.skipTargetCheck = true;
     }
     this.mapPattern();
   }
@@ -91,8 +92,7 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.targetCheck = function () {
-    this.target = this.chooseTarget();
-    if (this.position.equals(this.target)) {
+    if (!this.skipTargetCheck && this.position.equals(this.target)) {
       this.reachTarget();
     }
   }
