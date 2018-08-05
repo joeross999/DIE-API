@@ -16,11 +16,6 @@ var Bot = function (pos, address, pattern) {
   this.path = [];
   this.hasReachedTarget = false;
   this.numComplete = 0;
-  this.roamSpiral = {};
-  this.roamSpiral.numSteps = 0;
-  this.roamSpiral.dir = 0;
-  this.roamSpiral.stepsLeft = 0;
-  this.roamSpiral.cycleStep = 1;
 
   // Broadcasts single message to all bots in range
   this.broadcastMessage = async function (message, type) {
@@ -49,7 +44,6 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.postCommunication = function () {
-    this.moveCounter++;
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
       this.moveCounter = 0;
       let cluster = this.neighbors.slice();
@@ -57,9 +51,6 @@ var Bot = function (pos, address, pattern) {
       this.origin = this.calcOrigin(cluster);
       this.mapPattern();
       this.hasReachedTarget = false;
-      this.roamSpiral.numSteps = 0;
-      this.roamSpiral.dir = 0;
-      this.roamSpiral.stepsLeft = 0;
       this.numComplete = 0;
     }
   }
@@ -84,31 +75,27 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.roam = function () {
-    if(this.address == 0) {
-      console.log(this.roamSpiral);
+    let dir = (Math.ceil(2*Math.sqrt(Math.floor(this.moveCounter/Math.floor(Math.sqrt(this.neighbors.length + 1)))+1)) - 2) % 4;
+    if(this.address == 0) console.log(dir);
+    switch (dir) {
+      case 0:
+        this.position.move(1, 0);
+        this.origin.move(1, 0);
+        break;
+      case 1:
+        this.position.move(0, -1);
+        this.origin.move(0, -1);
+        break;
+      case 2:
+        this.position.move(-1, 0);
+        this.origin.move(-1, 0);
+        break;
+      case 3:
+        this.position.move(0, 1);
+        this.origin.move(0, 1);
+        break;
     }
-    if(this.roamSpiral.stepsLeft == 0) {
-      if(this.roamSpiral.dir == 0 || this.roamSpiral.dir == 2) {
-        this.roamSpiral.numSteps += this.roamSpiral.cycleStep;
-      }
-      this.roamSpiral.stepsLeft = (this.roamSpiral.numSteps) * Math.ceil(Math.sqrt(this.neighbors.length + 1));
-      this.roamSpiral.dir = (this.roamSpiral.dir + 1);
-      this.roamSpiral.dir %= 4;
-    }
-    if(this.roamSpiral.dir == 0) {
-      this.position.move(1, 0);
-    } if(this.roamSpiral.dir == 1) {
-      this.position.move(0, -1);
-    } if(this.roamSpiral.dir == 2) {
-      this.position.move(-1, 0);
-    } if(this.roamSpiral.dir == 3) {
-      this.position.move(0, 1);
-    }
-    this.roamSpiral.stepsLeft--;
-
-    let cluster = this.neighbors.slice();
-    cluster.push(this.position);
-    this.origin = this.calcOrigin(cluster);
+    this.moveCounter++;
   }
 
   this.moveToNext = function () {
@@ -128,7 +115,7 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.assemblePattern = function () {
-    if((this.numComplete == (this.neighbors.length + 1)) || this.neighbors.size+1 < Math.ceil(this.pattern.size/2)) {
+    if((this.numComplete == (this.neighbors.length + 1)) || this.neighbors.size+1 < Math.ceil(this.pattern.size/4)) {
       this.roam();
     } else {
       if (!this.hasReachedTarget && this.path.length === 0) {
