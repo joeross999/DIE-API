@@ -36,6 +36,18 @@ main.init = function (data, res, userID) {
   global.comSystem = new ComSystem(bots, world.wirelessRange);
 
   setBotColor();
+  db.remove({
+    "userID": userID
+  }, dbURL, continueInit, res, userID)
+};
+
+main.frame = function (res, userID) {
+  db.find({
+    "userID": userID
+  }, dbURL, continueFrame, res, userID);
+}
+
+function continueInit(res, userID) {
   db.insert({
     "userID": userID,
     "world": global.world,
@@ -47,12 +59,6 @@ main.init = function (data, res, userID) {
       }
     })
   }, dbURL, finishInit, res);
-};
-
-main.frame = function (res, userID) {
-  db.find({
-    "userID": userID
-  }, dbURL, continueFrame, res, userID);
 }
 
 function finishInit(res) {
@@ -224,7 +230,21 @@ db.find = function (query, url, callback, browserResult, userID) {
     dbo.collection("worlds").findOne(query, function (err, res) {
       if (err) throw err;
       db.close();
-      callback(res, browserResult, userID)
+      callback(res, browserResult, userID);
+    });
+  });
+}
+
+db.remove = function (query, url, callback, browserResult, userID) {
+  MongoClient.connect(url, {
+    useNewUrlParser: true
+  }, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db("distributed-intelligence-experiment");
+    dbo.collection("worlds").deleteMany(query, function (err, res) {
+      if (err) throw err;
+      db.close();
+      callback(browserResult, userID);
     });
   });
 }
