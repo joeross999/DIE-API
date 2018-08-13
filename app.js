@@ -35,11 +35,12 @@ app.get('/', function(req, res){
 });
 let testUser = "TESTUSER"
 app.post('/init', function(req, res){
+  global[req.sessionID] = {};
   main.init(req.body, res, req.sessionID);
-  console.log(req.sessionID)
 });
 
 app.get('/refresh', function(req, res){
+  global[req.sessionID] = {};
   main.frame(res, req.sessionID);
 });
 
