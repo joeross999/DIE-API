@@ -14,28 +14,27 @@ const dbURL = f('mongodb://%s:%s@ds111082.mlab.com:11082/distributed-intelligenc
   user, password, authMechanism);
 
 var main = {};
-var bots = [];
 let db = {};
 
 
 main.init = function (data, res, userID) {
-  global.world = data;
-  global.world.patternType = "checkerboardSquare"
-  let pattern = new Maps[world.patternType](world.numberOfBots);
-  bots = [];
-  setupWorld(world);
-  var points = generatePoints(world.numberOfBots, world.spawnRange);
+  global[userID].world = data;
+  global[userID].world.patternType = "checkerboardSquare"
+  let pattern = new Maps[global[userID].world.patternType](global[userID].world.numberOfBots);
+  let bots = [];
+  setupWorld(global[userID].world);
+  var points = generatePoints(global[userID].world.numberOfBots, global[userID].world.spawnRange);
   // TODO generate random addresses
-  for (var i = 0; i < world.numberOfBots; i++) {
+  for (var i = 0; i < global[userID].world.numberOfBots; i++) {
     newPattern = Object.assign({}, pattern);
     newPattern.init = pattern.init;
-    bots.push(new Bot(points[i], i, newPattern));
+    bots.push(new Bot(points[i], i, newPattern, userID));
   }
 
   // Initialize Communication System
-  global.comSystem = new ComSystem(bots, world.wirelessRange);
+  global[userID].comSystem = new ComSystem(bots, global[userID].world.wirelessRange);
 
-  setBotColor();
+  setBotColor(userID);
   db.remove({
     "userID": userID
   }, dbURL, continueInit, res, userID)
@@ -50,9 +49,8 @@ main.frame = function (res, userID) {
 function continueInit(res, userID) {
   db.insert({
     "userID": userID,
-    "world": global.world,
-    // "bots": bots,
-    "bots": bots.map(bot => {
+    "world": global[userID].world,
+    "bots": global[userID].comSystem.bots.map(bot => {
       return {
         'pos': bot.position,
         'address': bot.address,
@@ -61,47 +59,50 @@ function continueInit(res, userID) {
         "target": bot.target
       }
     })
-  }, dbURL, finishInit, res);
+  }, dbURL, finishInit, res, userID);
 }
 
-function finishInit(res) {
+function finishInit(res, userID) {
+  let tempWorld = global[userID].world;
+  let tempComsystem = global[userID].comSystem;
+  cleanupServer(userID);
   res.json({
-    "bots": bots.map(bot => {
+    "bots": tempComsystem.bots.map(bot => {
       return {
         'pos': bot.position,
         'color': bot.color
       }
     }),
-    "world": global.world
+    "world": tempWorld
   });
 }
 
 function continueFrame(doc, res, userID) {
-  global.world = doc.world;
-  let pattern = new Maps[world.patternType](world.numberOfBots);
-  bots = [];
-  for(let i = 0; i < doc.bots.length; i++){
+  global[userID].world = doc.world;
+  let pattern = new Maps[global[userID].world.patternType](global[userID].world.numberOfBots);
+  let bots = [];
+  for (let i = 0; i < doc.bots.length; i++) {
     elem = doc.bots[i];
     newPattern = Object.assign({}, pattern);
     newPattern.init = pattern.init;
-    newBot = new Bot(new Position(elem.pos.x, elem.pos.y), elem.address, newPattern);
+    newBot = new Bot(new Position(elem.pos.x, elem.pos.y), elem.address, newPattern, userID);
     newBot.origin = new Position(elem.origin.x, elem.origin.y);
-    if(elem.target) newBot.target = new Position(elem.target.x, elem.target.y);
+    if (elem.target) newBot.target = new Position(elem.target.x, elem.target.y);
     newBot.lastTurnNeigborsLength = elem.lastTurnNeigborsLength;
     bots.push(newBot);
   };
-  global.comSystem = new ComSystem(bots, world.wirelessRange);
-  comSystem.setSubscriberList();
-  sendMessages();
-  postCommunication();
-  moveBots();
-  cleanupBots();
-  setBotColor();
+  global[userID].comSystem = new ComSystem(bots, global[userID].world.wirelessRange);
+  global[userID].comSystem.setSubscriberList();
+  sendMessages(userID);
+  postCommunication(userID);
+  moveBots(userID);
+  cleanupBots(userID);
+  setBotColor(userID);
   db.update({
     "userID": userID
   }, {
     $set: {
-      "bots": bots.map(bot => {
+      "bots": global[userID].comSystem.bots.map(bot => {
         return {
           'pos': bot.position,
           'address': bot.address,
@@ -111,11 +112,13 @@ function continueFrame(doc, res, userID) {
         }
       })
     }
-  }, dbURL, finishFrame, res);
+  }, dbURL, finishFrame, res, userID);
 }
 
-function finishFrame(res) {
-  res.json(bots.map(bot => {
+function finishFrame(res, userID) {
+  let tempComsystem = global[userID].comSystem;
+  cleanupServer(userID);
+  res.json(tempComsystem.bots.map(bot => {
     return {
       'pos': bot.position,
       'color': bot.color
@@ -123,18 +126,18 @@ function finishFrame(res) {
   }));
 }
 
-function moveBots() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].targetCheck();
+function moveBots(userID) {
+  for (var i = 0; i < global[userID].comSystem.bots.length; i++) {
+    global[userID].comSystem.bots[i].targetCheck();
   }
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].assemblePattern();
+  for (var i = 0; i < global[userID].comSystem.bots.length; i++) {
+    global[userID].comSystem.bots[i].assemblePattern();
   }
 }
 
-function postCommunication() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].postCommunication();
+function postCommunication(userID) {
+  for (var i = 0; i < global[userID].comSystem.bots.length; i++) {
+    global[userID].comSystem.bots[i].postCommunication();
   }
 }
 
@@ -164,7 +167,8 @@ function setupWorld(world) {
   world.spawnRange.y.max = world.worldBounds.y / 4 * 3;
 }
 
-function setBotColor() {
+function setBotColor(userID) {
+  let bots = global[userID].comSystem.bots;
   for (var i = 0; i < bots.length; i++) {
     switch (bots[i].lastTurnNeigborsLength) {
       case 0:
@@ -191,20 +195,24 @@ function setBotColor() {
   }
 }
 
-function sendMessages() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].sendMessages(bots[i].position);
+function sendMessages(userID) {
+  for (var i = 0; i < global[userID].comSystem.bots.length; i++) {
+    global[userID].comSystem.bots[i].sendMessages(global[userID].comSystem.bots[i].position);
   }
 }
 
-function cleanupBots() {
-  for (var i = 0; i < bots.length; i++) {
-    bots[i].cleanup();
+function cleanupBots(userID) {
+  for (var i = 0; i < global[userID].comSystem.bots.length; i++) {
+    global[userID].comSystem.bots[i].cleanup();
   }
 }
 
+function cleanupServer(userID) {
+  delete global[userID];
+}
 
-db.insert = function (obj, url, callback, browserResult) {
+
+db.insert = function (obj, url, callback, browserResult, userID) {
   MongoClient.connect(url, {
     useNewUrlParser: true
   }, function (err, db) {
@@ -213,12 +221,12 @@ db.insert = function (obj, url, callback, browserResult) {
     dbo.collection("worlds").insertOne(obj, function (err, res) {
       if (err) throw err;
       db.close();
-      callback(browserResult);
+      callback(browserResult, userID);
     });
   });
 }
 
-db.update = function (query, newValues, url, callback, browserResult) {
+db.update = function (query, newValues, url, callback, browserResult, userID) {
   MongoClient.connect(url, {
     useNewUrlParser: true
   }, function (err, db) {
@@ -227,7 +235,7 @@ db.update = function (query, newValues, url, callback, browserResult) {
     dbo.collection("worlds").updateOne(query, newValues, function (err, res) {
       if (err) throw err;
       db.close();
-      callback(browserResult);
+      callback(browserResult, userID);
     });
   });
 }
