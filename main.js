@@ -9,7 +9,7 @@ var pattern = {};
 
 main.init = function (data) {
   global.world = data;
-  pattern = new Maps.checkerboardSquare(world.numberOfBots);
+  pattern = new Maps.solidSquare(world.numberOfBots);
   bots = [];
   setupWorld(world);
   var points = generatePoints(world.numberOfBots, world.spawnRange);
