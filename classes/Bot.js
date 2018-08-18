@@ -2,7 +2,8 @@ var Message = require('./Message.js');
 var Position = require('./Position.js');
 var PathFinding = require('pathfinding');
 
-var Bot = function (pos, address, pattern) {
+var Bot = function (pos, address, pattern, userID) {
+  this.userID = userID;
   this.position = pos;
   this.address = address;
   this.receivedMessages = []
@@ -17,13 +18,13 @@ var Bot = function (pos, address, pattern) {
   this.hasReachedTarget = false;
 
   // Broadcasts single message to all bots in range
-  this.broadcastMessage = async function (message, type) {
+  this.broadcastMessage = function (message, type) {
     this.receivedMessages.push(message.id);
-    comSystem.broadcastMessage(this.address, message);
+    global[userID].comSystem.broadcastMessage(this.address, message);
   }
 
   this.createMessage = function (message, type) {
-    return new Message(this.address, message, type);
+    return new Message(this.address, message, type, this.userID);
   }
 
   this.sendMessages = function (text) {
@@ -45,13 +46,14 @@ var Bot = function (pos, address, pattern) {
   this.postCommunication = function () {
     this.moveCounter++;
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
-      this.moveCounter = 0;
       let cluster = this.neighbors.slice();
       cluster.push(this.position);
       this.origin = this.calcOrigin(cluster);
-      this.mapPattern();
+      this.moveCounter = 0;
       this.hasReachedTarget = false;
+      this.skipTargetCheck = true;
     }
+    this.mapPattern();
   }
 
   this.cleanup = function () {
@@ -66,7 +68,7 @@ var Bot = function (pos, address, pattern) {
   this.move = function (x, y) {
     let target = new Position(this.position.x, this.position.y);
     target.move(x, y);
-    if (!comSystem.spaceOccupied(target)) {
+    if (!global[userID].comSystem.spaceOccupied(target)) {
       this.position.move(x, y);
       return true;
     }
@@ -78,23 +80,29 @@ var Bot = function (pos, address, pattern) {
   }
 
   this.moveToNext = function () {
+    this.target = this.chooseTarget();
     if (this.position.equals(this.target)) {
-      this.hasReachedTarget = true;
       this.reachTarget();
-    } else if (this.path.length != 0) {
+    } else if (this.path.length > 0) {
       let next = this.path.shift();
       if (!this.moveTowards(next)) {
         this.createPath();
-        this.moveToNext();
+        // this.moveToNext();
       }
     }
   }
 
-  this.assemblePattern = function () {
-    if (!this.hasReachedTarget && this.path.length === 0) {
-      this.createPath();
+  this.targetCheck = function () {
+    if (!this.skipTargetCheck && this.position.equals(this.target)) {
+      this.reachTarget();
     }
+  }
+
+  this.assemblePattern = function () {
     if (!this.hasReachedTarget) {
+      if (this.path.length === 0) {
+        this.createPath();
+      }
       this.moveToNext();
     }
   }
@@ -103,17 +111,17 @@ var Bot = function (pos, address, pattern) {
     this.path = [];
     this.target = this.chooseTarget();
     let path = this.findPath();
-    for (i = 0; i < path.length; i++) {
+    for (i = 1; i < path.length; i++) {
       this.path.push(new Position(path[i][0], path[i][1]));
     }
   }
 
   this.findPath = function () {
     // Uses pathfinding library to find new path to target
-    let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
+    let grid = new PathFinding.Grid(global[userID].world.worldBounds.x, global[userID].world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
-      //dontCrossCorners: true
+      dontCrossCorners: false
     });
     for (let i = 0; i < this.neighbors.length; i++) {
       let v = this.neighbors[i];
@@ -137,11 +145,10 @@ var Bot = function (pos, address, pattern) {
     let targetDistance = 0;
     let minimunNumberOfTargets = 5;
     let eligibleTargets = []
-    while (eligibleTargets.length <= minimunNumberOfTargets) {
+    while (eligibleTargets.length <= minimunNumberOfTargets && targetDistance < Math.ceil(this.pattern.width / 2)) {
       eligibleTargets = this.chooseEligibleTargets(targetDistance);
       targetDistance++;
     }
-
     // Choose target from open options
     let nearestTarget = {
       "target": eligibleTargets[0].location,
@@ -157,6 +164,7 @@ var Bot = function (pos, address, pattern) {
         }
       }
     }
+
     return nearestTarget.target;
   }
 
@@ -180,6 +188,7 @@ var Bot = function (pos, address, pattern) {
 
   this.reachTarget = function () {
     // Send message to other bots to inform them that a target has been filled
+    this.hasReachedTarget = true;
     this.broadcastMessage(this.createMessage(this.position, "targetReached"));
   }
 
@@ -226,8 +235,5 @@ var Bot = function (pos, address, pattern) {
   }
 
 }
-
-
-Bot.prototype.comSystem = global.comSystem;
 
 module.exports = Bot;
