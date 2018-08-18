@@ -2,7 +2,8 @@ var Message = require('./Message.js');
 var Position = require('./Position.js');
 var PathFinding = require('pathfinding');
 
-var Bot = function (pos, address, pattern) {
+var Bot = function (pos, address, pattern, userID) {
+  this.userID = userID;
   this.position = pos;
   this.address = address;
   this.receivedMessages = []
@@ -19,11 +20,11 @@ var Bot = function (pos, address, pattern) {
   // Broadcasts single message to all bots in range
   this.broadcastMessage = function (message, type) {
     this.receivedMessages.push(message.id);
-    comSystem.broadcastMessage(this.address, message);
+    global[userID].comSystem.broadcastMessage(this.address, message);
   }
 
   this.createMessage = function (message, type) {
-    return new Message(this.address, message, type);
+    return new Message(this.address, message, type, this.userID);
   }
 
   this.sendMessages = function (text) {
@@ -67,7 +68,7 @@ var Bot = function (pos, address, pattern) {
   this.move = function (x, y) {
     let target = new Position(this.position.x, this.position.y);
     target.move(x, y);
-    if (!comSystem.spaceOccupied(target)) {
+    if (!global[userID].comSystem.spaceOccupied(target)) {
       this.position.move(x, y);
       return true;
     }
@@ -117,7 +118,7 @@ var Bot = function (pos, address, pattern) {
 
   this.findPath = function () {
     // Uses pathfinding library to find new path to target
-    let grid = new PathFinding.Grid(world.worldBounds.x, world.worldBounds.y);
+    let grid = new PathFinding.Grid(global[userID].world.worldBounds.x, global[userID].world.worldBounds.y);
     var finder = new PathFinding.AStarFinder({
       allowDiagonal: true,
       dontCrossCorners: false
@@ -234,8 +235,5 @@ var Bot = function (pos, address, pattern) {
   }
 
 }
-
-
-Bot.prototype.comSystem = global.comSystem;
 
 module.exports = Bot;
