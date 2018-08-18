@@ -17,7 +17,7 @@ var Bot = function (pos, address, pattern) {
   this.hasReachedTarget = false;
 
   // Broadcasts single message to all bots in range
-  this.broadcastMessage = async function (message, type) {
+  this.broadcastMessage = function (message, type) {
     this.receivedMessages.push(message.id);
     comSystem.broadcastMessage(this.address, message);
   }

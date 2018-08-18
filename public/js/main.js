@@ -38,7 +38,7 @@ world = JSON.parse(JSON.stringify(defaultWorld));
 function initSim() {
   running = true;
   $.post({
-    url: "http://localhost:3000/init",
+    url: "/init",
     data: world,
     success: function (res) {
       initCanvas();
@@ -53,7 +53,7 @@ function initSim() {
 function refresh() {
   reset = setTimeout(function () {
     $.ajax({
-      url: "http://localhost:3000/refresh",
+      url: "/refresh",
       dataType: "json",
       success: function (res) {
         drawMap(res, world);
