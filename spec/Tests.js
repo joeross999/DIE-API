@@ -1,5 +1,18 @@
 var Position = require('../classes/Position');
+var ComSystem = require('../classes/ComSystem');
+var Message = require('../classes/Message');
+var Bot = require('../classes/Bot');
+let helpers = require('../helpers');
+let main = require('../main');
 
+
+describe("DB", function() {
+  var a;
+
+  it("create", function() {
+    main.testDB();
+  });
+});
 
 describe("Position", function() {
   var a;
@@ -54,9 +67,6 @@ describe("Position", function() {
   });
 });
 
-var ComSystem = require('../classes/ComSystem');
-var Message = require('../classes/Message');
-
 init = function (botRange = 1) {
   bots = [];
 
@@ -79,7 +89,6 @@ describe("Message", function() {
   });
 })
 
-var Bot = require('../classes/Bot');
 
 describe("Bot", function() {
 
@@ -189,7 +198,6 @@ describe("Com System", function() {
   });
 });
 
-let helpers = require('../helpers');
 
 describe("Helper", function() {
   it("ContainsEqual", function() {

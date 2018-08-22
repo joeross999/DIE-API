@@ -4,6 +4,7 @@ var express = require('express');
 var app = express();
 var path = require('path');
 var favicon = require('serve-favicon');
+var session = require('express-session')
 
 var port = 3000
 
@@ -19,18 +20,28 @@ app.use(bodyParser.urlencoded({
   extended: true
 })); 
 
+// Session Setup
+app.set('trust proxy', 1)
+app.use(session({
+  secret: 'SessionSecret...',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}))
+
 // ROUTES
 app.get('/', function(req, res){
   res.render('index');
 });
-
+let testUser = "TESTUSER"
 app.post('/init', function(req, res){
-  result = main.init(req.body);
-  res.json({"bots": result.bots.map(bot => {return {'pos': bot.position, 'color': bot.color}}), "world": result.world});
+  global[req.sessionID] = {};
+  main.init(req.body, res, req.sessionID);
 });
 
 app.get('/refresh', function(req, res){
-  res.json(main.frame().map(bot => {return {'pos': bot.position, 'color': bot.color}}));
+  global[req.sessionID] = {};
+  main.frame(res, req.sessionID);
 });
 
 
