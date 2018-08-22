@@ -16,9 +16,11 @@ var Bot = function (pos, address, pattern, userID) {
   this.pattern.init();
   this.path = [];
   this.hasReachedTarget = false;
+  this.hasRoamed = false;
+  this.numComplete = 0;
 
   // Broadcasts single message to all bots in range
-  this.broadcastMessage = function (message, type) {
+  this.broadcastMessage = async function (message) {
     this.receivedMessages.push(message.id);
     global[userID].comSystem.broadcastMessage(this.address, message);
   }
@@ -39,18 +41,21 @@ var Bot = function (pos, address, pattern, userID) {
       if (message.type === "targetReached") {
         this.acceptReachTarget(message.text);
       }
+      if (message.type === "roamDirection") {
+        if(!this.hasRoamed) this.roam(message.text);
+      }
       this.broadcastMessage(message);
     }
   }
 
   this.postCommunication = function () {
-    this.moveCounter++;
     if (this.neighbors.length != this.lastTurnNeigborsLength) {
       let cluster = this.neighbors.slice();
       cluster.push(this.position);
       this.origin = this.calcOrigin(cluster);
       this.moveCounter = 0;
       this.hasReachedTarget = false;
+      this.numComplete = 0;
       this.skipTargetCheck = true;
     }
     this.mapPattern();
@@ -60,6 +65,7 @@ var Bot = function (pos, address, pattern, userID) {
     this.lastTurnNeigborsLength = this.neighbors.length;
     this.neighbors = [];
     this.receivedMessages = [];
+    this.hasRoamed = false;
   }
 
   // Moves Bot in specified direction
@@ -75,8 +81,31 @@ var Bot = function (pos, address, pattern, userID) {
     return false;
   }
 
-  this.roam = function () {
-    // TODO Move in roaming pattern
+  this.getDir = function () {
+    return dir = (Math.ceil(2*Math.sqrt(Math.floor(this.moveCounter/Math.floor(Math.sqrt(this.neighbors.length + 1)))+1)) - 2) % 4;
+  }
+
+  this.roam = function (dir) {
+    this.hasRoamed = true;
+    switch (dir) {
+      case 0:
+        this.position.move(1, 0);
+        this.origin.move(1, 0);
+        break;
+      case 1:
+        this.position.move(0, -1);
+        this.origin.move(0, -1);
+        break;
+      case 2:
+        this.position.move(-1, 0);
+        this.origin.move(-1, 0);
+        break;
+      case 3:
+        this.position.move(0, 1);
+        this.origin.move(0, 1);
+        break;
+    }
+    this.moveCounter++;
   }
 
   this.moveToNext = function () {
@@ -85,25 +114,34 @@ var Bot = function (pos, address, pattern, userID) {
       this.reachTarget();
     } else if (this.path.length > 0) {
       let next = this.path.shift();
+
       if (!this.moveTowards(next)) {
         this.createPath();
-        // this.moveToNext();
+        if(this.path.length != 0) {
+          this.moveToNext();
+        }
       }
-    }
-  }
-
-  this.targetCheck = function () {
-    if (!this.skipTargetCheck && this.position.equals(this.target)) {
-      this.reachTarget();
     }
   }
 
   this.assemblePattern = function () {
-    if (!this.hasReachedTarget) {
-      if (this.path.length === 0) {
+    if(((this.numComplete == (this.neighbors.length + 1)) || this.neighbors.size+1 < Math.ceil(this.pattern.size/4)) && !this.hasRoamed) {
+      let dir = this.getDir();
+      this.roam(dir);
+      this.broadcastMessage(this.createMessage(dir, "roamDirection"));
+    } else {
+      if (!this.hasReachedTarget && this.path.length === 0) {
         this.createPath();
       }
-      this.moveToNext();
+      if (!this.hasReachedTarget) {
+        this.moveToNext();
+      }
+    }
+  }
+  
+  this.targetCheck = function () {
+    if (!this.skipTargetCheck && this.position.equals(this.target)) {
+      this.reachTarget();
     }
   }
 
@@ -190,6 +228,7 @@ var Bot = function (pos, address, pattern, userID) {
     // Send message to other bots to inform them that a target has been filled
     this.hasReachedTarget = true;
     this.broadcastMessage(this.createMessage(this.position, "targetReached"));
+    this.numComplete++;
   }
 
   this.acceptReachTarget = function (target) {
@@ -202,6 +241,7 @@ var Bot = function (pos, address, pattern, userID) {
     if (this.target != null && target.equals(this.target)) {
       this.createPath();
     }
+    this.numComplete++;
   }
 
   this.calcOrigin = function (cluster) {

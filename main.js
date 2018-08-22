@@ -16,7 +16,6 @@ const dbURL = f('mongodb://%s:%s@ds111082.mlab.com:11082/distributed-intelligenc
 var main = {};
 let db = {};
 
-
 main.init = function (data, res, userID) {
   global[userID].world = data;
   global[userID].world.patternType = "checkerboardSquare"
