@@ -20,7 +20,7 @@ var Bot = function (pos, address, pattern, userID) {
   this.numComplete = 0;
 
   // Broadcasts single message to all bots in range
-  this.broadcastMessage = function (message, type) {
+  this.broadcastMessage = async function (message) {
     this.receivedMessages.push(message.id);
     global[userID].comSystem.broadcastMessage(this.address, message);
   }
@@ -42,7 +42,7 @@ var Bot = function (pos, address, pattern, userID) {
         this.acceptReachTarget(message.text);
       }
       if (message.type === "roamDirection") {
-        if (!this.hasRoamed) this.roam(message.text);
+        if(!this.hasRoamed) this.roam(message.text);
       }
       this.broadcastMessage(message);
     }
@@ -56,6 +56,7 @@ var Bot = function (pos, address, pattern, userID) {
       this.moveCounter = 0;
       this.numComplete = 0;
       this.hasReachedTarget = false;
+      this.numComplete = 0;
       this.skipTargetCheck = true;
     }
     this.mapPattern();
@@ -65,6 +66,7 @@ var Bot = function (pos, address, pattern, userID) {
     this.lastTurnNeigborsLength = this.neighbors.length;
     this.neighbors = [];
     this.receivedMessages = [];
+    this.hasRoamed = false;
   }
 
   // Moves Bot in specified direction
@@ -81,7 +83,7 @@ var Bot = function (pos, address, pattern, userID) {
   }
 
   this.getDir = function () {
-    return dir = (Math.ceil(2 * Math.sqrt(Math.floor(this.moveCounter / Math.floor(Math.sqrt(this.neighbors.length + 1))) + 1)) - 2) % 4;
+    return dir = (Math.ceil(2*Math.sqrt(Math.floor(this.moveCounter/Math.floor(Math.sqrt(this.neighbors.length + 1)))+1)) - 2) % 4;
   }
 
   this.roam = function (dir) {
@@ -113,31 +115,34 @@ var Bot = function (pos, address, pattern, userID) {
       this.reachTarget();
     } else if (this.path.length > 0) {
       let next = this.path.shift();
+
       if (!this.moveTowards(next)) {
         this.createPath();
-        // this.moveToNext();
+        if(this.path.length != 0) {
+          this.moveToNext();
+        }
       }
-    }
-  }
-
-  this.targetCheck = function () {
-    if (!this.skipTargetCheck && this.position.equals(this.target)) {
-      this.reachTarget();
     }
   }
 
   this.assemblePattern = function () {
-    if (((this.numComplete == (this.neighbors.length + 1)) || this.neighbors.size + 1 < Math.ceil(this.pattern.size / 4)) && !this.hasRoamed) {
+    if(((this.numComplete == (this.neighbors.length + 1)) || this.neighbors.size+1 < Math.ceil(this.pattern.size/4)) && !this.hasRoamed) {
       let dir = this.getDir();
       this.roam(dir);
       this.broadcastMessage(this.createMessage(dir, "roamDirection"));
     } else {
+      if (!this.hasReachedTarget && this.path.length === 0) {
+        this.createPath();
+      }
       if (!this.hasReachedTarget) {
-        if (this.path.length === 0) {
-          this.createPath();
-        }
         this.moveToNext();
       }
+    }
+  }
+  
+  this.targetCheck = function () {
+    if (!this.skipTargetCheck && this.position.equals(this.target)) {
+      this.reachTarget();
     }
   }
 
