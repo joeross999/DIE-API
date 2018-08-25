@@ -56,7 +56,8 @@ function continueInit(res, userID) {
         'address': bot.address,
         'origin': bot.origin,
         'lastTurnNeigborsLength': bot.lastTurnNeigborsLength,
-        "target": bot.target
+        "target": bot.target,
+        'moveCounter': bot.moveCounter
       }
     })
   }, dbURL, finishInit, res, userID);
@@ -89,6 +90,7 @@ function continueFrame(doc, res, userID) {
     newBot.origin = new Position(elem.origin.x, elem.origin.y);
     if (elem.target) newBot.target = new Position(elem.target.x, elem.target.y);
     newBot.lastTurnNeigborsLength = elem.lastTurnNeigborsLength;
+    newBot.moveCounter = elem.moveCounter;
     bots.push(newBot);
   };
   global[userID].comSystem = new ComSystem(bots, global[userID].world.wirelessRange);
@@ -108,7 +110,8 @@ function continueFrame(doc, res, userID) {
           'address': bot.address,
           'origin': bot.origin,
           'lastTurnNeigborsLength': bot.lastTurnNeigborsLength,
-          "target": bot.target
+          "target": bot.target,
+          'moveCounter': bot.moveCounter
         }
       })
     }
